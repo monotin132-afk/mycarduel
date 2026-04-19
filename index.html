@@ -902,13 +902,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
     <!-- P2 S/T row -->
     <div class="field-row" style="margin-bottom:4px">
       <div class="field-side">
-        <div class="small-zone" onclick="viewGraveModal(1,'extra')" title="エクストラ">EX<span class="sz-cnt" id="p2-exc">0</span></div>
-        <div class="small-zone" onclick="viewGraveModal(1,'removed')" title="除外">除<span class="sz-cnt" id="p2-rmc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(opp(DS.viewP),'extra')" title="エクストラ">EX<span class="sz-cnt" id="p2-exc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(opp(DS.viewP),'removed')" title="除外">除<span class="sz-cnt" id="p2-rmc">0</span></div>
       </div>
       <div style="display:flex;gap:6px" id="p2-st"></div>
       <div class="field-side">
         <div class="small-zone" style="cursor:default" title="デッキ">DECK<span class="sz-cnt" id="p2-dkc">0</span></div>
-        <div class="small-zone" onclick="viewGraveModal(1,'grave')" title="墓地">GY<span class="sz-cnt" id="p2-gyc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(opp(DS.viewP),'grave')" title="墓地">GY<span class="sz-cnt" id="p2-gyc">0</span></div>
       </div>
     </div>
     <!-- P2 Monster row -->
@@ -934,13 +934,13 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
     <!-- P1 S/T row -->
     <div class="field-row" style="margin-top:4px">
       <div class="field-side">
-        <div class="small-zone" onclick="viewGraveModal(0,'extra')" title="エクストラ">EX<span class="sz-cnt" id="p1-exc">0</span></div>
-        <div class="small-zone" onclick="viewGraveModal(0,'removed')" title="除外">除<span class="sz-cnt" id="p1-rmc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(DS.viewP,'extra')" title="エクストラ">EX<span class="sz-cnt" id="p1-exc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(DS.viewP,'removed')" title="除外">除<span class="sz-cnt" id="p1-rmc">0</span></div>
       </div>
       <div style="display:flex;gap:6px" id="p1-st"></div>
       <div class="field-side">
         <div class="small-zone" style="cursor:default" title="デッキ">DECK<span class="sz-cnt" id="p1-dkc">0</span></div>
-        <div class="small-zone" onclick="viewGraveModal(0,'grave')" title="墓地">GY<span class="sz-cnt" id="p1-gyc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(DS.viewP,'grave')" title="墓地">GY<span class="sz-cnt" id="p1-gyc">0</span></div>
       </div>
     </div>
   </div><!-- /field-mat -->
@@ -986,6 +986,30 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
       <button class="btn btn-outline" onclick="document.getElementById('grave-viewer-modal').classList.remove('open')">閉じる</button>
     </div>
   </div>
+</div>
+
+<!-- Card Select Modal (for search/special summon effects) -->
+<div class="modal-backdrop" id="card-select-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-title" id="card-select-title">カードを選択</div>
+    <div id="card-select-content" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:4px 0;max-height:55vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelCardSelect()">キャンセル</button>
+    </div>
+  </div>
+</div>
+
+<!-- Screen Pass Overlay (local mode) -->
+<div id="screen-pass" class="hidden" style="position:fixed;inset:0;z-index:850;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px">
+  <div style="font-family:'Cinzel Decorative',serif;font-size:18px;color:var(--gold);text-shadow:0 0 20px rgba(200,163,39,.6)">画面を渡してください</div>
+  <div style="font-family:'Cinzel',serif;font-size:26px;color:#fff"><span id="sp-pname">Player</span> のターン</div>
+  <div style="font-size:11px;color:var(--text2)">準備ができたらボタンを押してください</div>
+  <button onclick="continueAfterPass()" style="margin-top:8px;padding:12px 32px;font-family:'Cinzel',serif;font-size:14px;background:linear-gradient(135deg,#7a5010,#c8a327);border:1px solid #e8c040;color:#fff;border-radius:10px;cursor:pointer">▶ デュエル開始</button>
+</div>
+
+<!-- Online waiting overlay (opponent's turn) -->
+<div id="online-wait" class="hidden" style="position:fixed;inset:0;z-index:400;pointer-events:none;display:flex;align-items:flex-end;justify-content:center;padding-bottom:80px">
+  <div style="background:rgba(0,0,0,.6);border:1px solid rgba(200,160,60,.3);border-radius:10px;padding:8px 18px;font-family:'Cinzel',serif;font-size:11px;color:rgba(200,163,39,.8)">⏳ 相手のターンです — 待機中</div>
 </div>
 
 <!-- LP Flash Overlay -->
@@ -1110,10 +1134,10 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
     <div id="detail-content"></div>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeDetail()">閉じる</button>
-      <button class="btn btn-outline" onclick="shareURL()">🔗 URLシェア</button>
-      <button class="btn btn-outline" onclick="exportCard1JSON()">📤 JSON</button>
-      <button class="btn btn-outline" onclick="addDetailCardToDeck()">＋ デッキへ</button>
-      <button class="btn btn-primary" onclick="editFromDetail()">✏️ 編集</button>
+      <button class="btn btn-outline" onclick="shareURL()" id="detail-btn-share">🔗 URLシェア</button>
+      <button class="btn btn-outline" onclick="exportCard1JSON()" id="detail-btn-export">📤 JSON</button>
+      <button class="btn btn-outline" onclick="addDetailCardToDeck()" id="detail-btn-deck" style="display:none">＋ デッキへ</button>
+      <button class="btn btn-primary" onclick="editFromDetail()" id="detail-btn-edit" style="display:none">✏️ 編集</button>
     </div>
   </div>
 </div>
@@ -1186,6 +1210,11 @@ const DEF_ICONS = ['⚔️','🐉','🧙','🏹','🛡️','⚡','🔥','💧','
    NAVIGATION
 =========================== */
 function showSec(name) {
+  // Block navigation away from duel while active
+  if (DS.active && name !== 'duel') {
+    if (!confirm('デュエル中です。対戦を終了して移動しますか？')) return;
+    exitDuel();
+  }
   S.sec = name;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + name).classList.add('active');
@@ -1193,11 +1222,11 @@ function showSec(name) {
     b.classList.toggle('active', b.dataset.sec === name);
   });
   document.querySelector('.main-content').classList.toggle('duel-mode', name === 'duel');
-  if (name === 'home')      renderHome();
-  if (name === 'mycards')   renderCardsGrid();
+  if (name === 'home')        renderHome();
+  if (name === 'mycards')     renderCardsGrid();
   if (name === 'deckbuilder') { renderPool(); renderDeckSlots(); }
-  if (name === 'mydecks')   renderDeckList();
-  if (name === 'duel')      onShowDuel();
+  if (name === 'mydecks')     renderDeckList();
+  if (name === 'duel')        onShowDuel();
 }
 
 /* ===========================
@@ -1835,6 +1864,18 @@ function renderCardsGrid() {
 function showDetail(id) {
   S.detailId = id;
   const c = S.cards.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('detail-title').textContent = c.name;
+  // Show/hide action buttons depending on context
+  const inDuel = DS.active;
+  const deckBtn = document.getElementById('detail-btn-deck');
+  const editBtn = document.getElementById('detail-btn-edit');
+  const shareBtn = document.getElementById('detail-btn-share');
+  const exportBtn = document.getElementById('detail-btn-export');
+  if (deckBtn) deckBtn.style.display = inDuel ? 'none' : '';
+  if (editBtn) editBtn.style.display = inDuel ? 'none' : '';
+  if (shareBtn) shareBtn.style.display = inDuel ? 'none' : '';
+  if (exportBtn) exportBtn.style.display = inDuel ? 'none' : '';
   if (!c) return;
   document.getElementById('detail-title').textContent = c.name;
   const isM = c.type === 'monster';
@@ -2478,17 +2519,21 @@ async function generateStarterDecks(){
 =========================== */
 const DS={
   active:false,turn:0,turnCount:1,phase:'main1',firstTurn:true,
-  state:'idle', // idle|tribute|target|attack
+  state:'idle',
   tribute:{needed:0,selected:[],pendingHand:-1,pendingPos:'atk'},
   target:{filter:null,cb:null,label:''},
   attackSrc:null,
   selected:null,
   players:[null,null],
   buffs:[],
-  log:[]
+  log:[],
+  viewP:0,        // which player index is shown at BOTTOM (perspective)
+  isOnline:false, // true in online mode
+  applyingRemote:false, // true while applying opponent's action (skip re-push)
+  lastActionSeq:0 // last Firebase action seq processed
 };
-const PHASE_LIST=['draw','standby','main1','battle','main2','end'];
-const PHASE_NAMES={draw:'ドロー',standby:'スタンバイ',main1:'メイン1',battle:'バトル',main2:'メイン2',end:'エンド'};
+const PHASE_LIST=['draw','main1','battle','end'];
+const PHASE_NAMES={draw:'ドロー',main1:'メイン1',battle:'バトル',end:'エンド'};
 
 function mkPlayer(name,deckIds,extraIds){
   const deck=shuffle([...deckIds].map(id=>S.cards.find(c=>c.id===id)).filter(Boolean));
@@ -2553,6 +2598,7 @@ function startDuel(){
 
   DS.active=true;DS.turn=0;DS.turnCount=1;DS.firstTurn=true;
   DS.phase='main1';DS.state='idle';DS.buffs=[];DS.log=[];
+  DS.viewP=0; DS.isOnline=false; DS.applyingRemote=false; DS.lastActionSeq=0;
   DS.players[0]=mkPlayer(n1,d1.main||[],d1.extra||[]);
   DS.players[1]=mkPlayer(n2,d2.main||[],d2.extra||[]);
   drawCard(0,5);drawCard(1,5);
@@ -2571,21 +2617,23 @@ function advancePhase(){
   if(DS.state==='tribute'){cancelTribute();return;}
   if(DS.state==='attack'){cancelAttack();return;}
   if(DS.state==='target'){cancelTarget();return;}
+  if(DS.isOnline&&DS.turn!==DS.viewP){toast('相手のターンです','error');return;}
+  pushAction('advancePhase',{});
 
   const cur=PHASE_LIST.indexOf(DS.phase);
   let next=PHASE_LIST[cur+1];
   if(!next){doEndPhase();return;}
-  if(next==='battle'&&DS.firstTurn&&DS.turn===0){next='main2';}
+  if(next==='battle'&&DS.firstTurn&&DS.turn===0){doEndPhase();return;} // 先攻バトルなし
   DS.phase=next;
   if(DS.phase==='draw'){doDrawPhase();}
   else if(DS.phase==='end'){doEndPhase();}
-  else{
-    const hints={
-      standby:'スタンバイフェイズ — 永続効果が発動します',
-      main1:'メインフェイズ1 — 召喚・魔法・罠を使えます',
-      battle:'バトルフェイズ — モンスターで攻撃できます',
-      main2:'メインフェイズ2 — 追加の魔法・罠を使えます',
-    };
+  else if(DS.phase==='battle'){
+    // Clear justSummoned so this turn's monsters CAN attack
+    DS.players[DS.turn].field.monsters.forEach(fc=>{if(fc)fc.justSummoned=false;});
+    addLog(`${DS.players[DS.turn].name} ─ バトルフェイズ — モンスターで攻撃できます`,'lgi');
+    renderDuel();
+  } else {
+    const hints={main1:'メインフェイズ — 召喚・魔法・罠を使えます'};
     addLog(`${DS.players[DS.turn].name} ─ ${hints[DS.phase]||PHASE_NAMES[DS.phase]}`,'lgi');
     renderDuel();
   }
@@ -2598,21 +2646,8 @@ function doDrawPhase(){
   } else {
     addLog(`${DS.players[DS.turn].name} の先攻ターン — ドローなし`,'');
   }
-  DS.phase='standby';
-  addLog(`${DS.players[DS.turn].name} ─ スタンバイフェイズ — 永続効果が発動します`,'lgi');
-  // Auto-trigger standby effects on continuous cards
-  [0,1].forEach(p=>{
-    DS.players[p].field.spells.forEach(fc=>{
-      if(fc&&fc.faceUp&&fc.card.subtype==='continuous'&&fc.card.effects){
-        fc.card.effects.forEach(e=>{
-          if(e.timing==='standby'){
-            addLog(`「${fc.card.name}」のスタンバイ効果が発動`,'lgs');
-            activateOneEff(e,p,opp(p),fc.card,{zone:'spells',idx:DS.players[p].field.spells.indexOf(fc)});
-          }
-        });
-      }
-    });
-  });
+  DS.phase='main1';
+  addLog(`${DS.players[DS.turn].name} ─ メインフェイズ — 召喚・魔法・罠を使えます`,'lgi');
   renderDuel();
 }
 
@@ -2636,6 +2671,26 @@ function nextTurn(){
   DS.turnCount++;
   DS.phase='draw';
   DS.selected=null;DS.attackSrc=null;
+  if(!DS.isOnline){
+    // Local: flip view to new active player and show screen-pass overlay
+    DS.viewP=DS.turn;
+    showScreenPass();
+  } else {
+    addLog(`─── ${DS.players[DS.turn].name} のターン（${DS.turnCount}ターン目）───`,'lgi');
+    doDrawPhase();
+  }
+}
+
+function showScreenPass(){
+  const el=document.getElementById('screen-pass');
+  if(!el){continueAfterPass();return;}
+  document.getElementById('sp-pname').textContent=DS.players[DS.turn].name;
+  el.classList.remove('hidden');
+}
+
+function continueAfterPass(){
+  const el=document.getElementById('screen-pass');
+  if(el)el.classList.add('hidden');
   addLog(`─── ${DS.players[DS.turn].name} のターン（${DS.turnCount}ターン目）───`,'lgi');
   doDrawPhase();
 }
@@ -2673,6 +2728,7 @@ function tryNormalSummon(p,handIdx,pos='atk'){
     pl.field.monsters[slot]=mkFC(c,pos,true);
     pl.summonedMain=true;
     addLog(`${pl.name} が「${c.name}」を通常召喚！（${pos.toUpperCase()}）`,'lgs');
+    pushAction('normalSummon',{pl:p,idx:handIdx,pos});
     DS.selected=null;renderDuel();
   } else {
     const avail=pl.field.monsters.filter(x=>x).length;
@@ -2697,11 +2753,11 @@ function tributeClick(idx){
     const pos=DS.tribute.pendingPos;
     const slot=pl.field.monsters.findIndex(x=>!x);
     if(slot===-1){toast('モンスターゾーンが満杯です','error');cancelTribute();return;}
-    // Adjust handIdx after possible hand shifts (none here - we only removed field cards)
     const [c]=pl.hand.splice(handIdx,1);
     pl.field.monsters[slot]=mkFC(c,pos,true);
     pl.summonedMain=true;
     addLog(`${pl.name} が「${c.name}」をリリース召喚！`,'lgs');
+    pushAction('normalSummon',{pl:DS.turn,idx:handIdx,pos,tributes:[...DS.tribute.selected]});
     cancelTribute();
   } else {renderDuel();}
 }
@@ -2713,7 +2769,9 @@ function doSetMonster(p,handIdx){
   if(slot===-1){toast('モンスターゾーンが満杯です','error');return;}
   const [c]=pl.hand.splice(handIdx,1);
   pl.field.monsters[slot]=mkFC(c,'def',false);pl.summonedMain=true;
-  addLog(`${pl.name} がモンスターをセット`,'');DS.selected=null;renderDuel();
+  addLog(`${pl.name} がモンスターをセット`,'');
+  pushAction('setMonster',{pl:p,idx:handIdx});
+  DS.selected=null;renderDuel();
 }
 
 function doSetST(p,handIdx){
@@ -2722,7 +2780,9 @@ function doSetST(p,handIdx){
   if(slot===-1){toast('魔法・罠ゾーンが満杯です','error');return;}
   const [c]=pl.hand.splice(handIdx,1);
   pl.field.spells[slot]=mkFC(c,'def',false);
-  addLog(`${pl.name} がカードをセット`,'');DS.selected=null;renderDuel();
+  addLog(`${pl.name} がカードをセット`,'');
+  pushAction('setST',{pl:p,idx:handIdx});
+  DS.selected=null;renderDuel();
 }
 
 function doActivateSpellHand(p,handIdx){
@@ -2739,6 +2799,7 @@ function doActivateSpellHand(p,handIdx){
     pl.grave.push(card);
     addLog(`${pl.name} が「${card.name}」を発動`,'lgs');
   }
+  pushAction('activateSpellHand',{pl:p,idx:handIdx});
   if(card.effects&&card.effects.length)activateEffects(card.effects,p,opp(p),card,null);
   DS.selected=null;renderDuel();
 }
@@ -2753,6 +2814,7 @@ function doActivateFromField(p,zone,idx){
   const isCont=card.subtype==='continuous';
   if(!isCont){pl.field[zone][idx]=null;pl.grave.push(card);}
   else{fc.effUsed=true;}
+  pushAction('activateFromField',{pl:p,zone,idx});
   if(card.effects&&card.effects.length)activateEffects(card.effects,p,opp(p),card,{zone,idx});
   renderDuel();
 }
@@ -2765,6 +2827,7 @@ function doMonsterEff(p,idx){
   if(!fc.card.effects||!fc.card.effects.length){toast('発動できる効果がありません','error');return;}
   addLog(`${pl.name} が「${fc.card.name}」の効果を発動！`,'lgs');
   fc.effUsed=true;
+  pushAction('monsterEff',{pl:p,idx});
   activateEffects(fc.card.effects,p,opp(p),fc.card,{zone:'monsters',idx});
   renderDuel();
 }
@@ -2775,6 +2838,7 @@ function doFlipSummon(p,idx){
   if(!fc||fc.faceUp||fc.justSet)return;
   fc.faceUp=true;fc.pos='atk';
   addLog(`${pl.name} が「${fc.card.name}」をリバース召喚！`,'lgs');
+  pushAction('flipSummon',{pl:p,idx});
   if(fc.card.effects)activateEffects(fc.card.effects,p,opp(p),fc.card,{zone:'monsters',idx});
   renderDuel();
 }
@@ -2784,7 +2848,9 @@ function doChangePos(p,idx){
   const fc=pl.field.monsters[idx];
   if(!fc||!fc.faceUp||fc.justSummoned)return;
   fc.pos=fc.pos==='atk'?'def':'atk';fc.justSummoned=true;
-  addLog(`「${fc.card.name}」の表示形式を変更（${fc.pos.toUpperCase()}）`,'');renderDuel();
+  addLog(`「${fc.card.name}」の表示形式を変更（${fc.pos.toUpperCase()}）`,'');
+  pushAction('changePos',{pl:p,idx});
+  renderDuel();
 }
 
 /* ---- ATTACK ---- */
@@ -2804,6 +2870,7 @@ function doAttack(targetP,targetIdx){
   if(!afc)return;
   const aATK=getEffAtk(ap,ai);
   afc.attacked=true;apl.attackedIdxs.add(ai);
+  pushAction('attack',{tp:targetP,tgt:targetIdx});
 
   if(targetIdx===-1){
     // Direct
@@ -2853,6 +2920,8 @@ function doAttack(targetP,targetIdx){
 function zoneClick(p,zone,idx,ev){
   if(ev)ev.stopPropagation();
   if(LP.triggered){LP.triggered=false;return;}
+  // Online: only act when it's your turn
+  if(DS.isOnline&&DS.turn!==DS.viewP&&DS.state==='idle')return;
   const fc=DS.players[p].field[zone][idx];
   const ap=DS.turn;
 
@@ -2881,12 +2950,18 @@ function zoneClick(p,zone,idx,ev){
 
 function directClick(p,ev){
   if(ev)ev.stopPropagation();
+  if(DS.isOnline&&DS.turn!==DS.viewP)return;
   if(DS.state==='attack'){const{p:ap}=DS.attackSrc;if(p===opp(ap))doAttack(p,-1);}
 }
 
 function handClick(p,idx,ev){
   if(ev)ev.stopPropagation();
   if(LP.triggered){LP.triggered=false;return;}
+  // In online mode, only allow your own hand on your turn
+  if(DS.isOnline){
+    if(p!==DS.viewP)return;
+    if(DS.turn!==DS.viewP&&DS.state==='idle')return;
+  }
   if(DS.state!=='idle'){cancelAttack();cancelTribute();cancelTarget();return;}
   if(p!==DS.turn)return;
   const card=DS.players[p].hand[idx];
@@ -2899,7 +2974,7 @@ function handClick(p,idx,ev){
 
 /* ---- ACTION MENUS ---- */
 function showHandActions(p,idx,card,x,y){
-  const isMain=DS.phase==='main1'||DS.phase==='main2';
+  const isMain=DS.phase==='main1';
   const pl=DS.players[p];
   let items=[];
   if(card.type==='monster'){
@@ -2927,8 +3002,8 @@ function showHandActions(p,idx,card,x,y){
 }
 
 function showZoneActions(p,zone,idx,fc,x,y){
-  const isMyZone=p===DS.turn;
-  const isMain=DS.phase==='main1'||DS.phase==='main2';
+  const isMyZone = DS.isOnline ? (p===DS.viewP && DS.turn===DS.viewP) : (p===DS.turn);
+  const isMain=DS.phase==='main1';
   const isBattle=DS.phase==='battle';
   let items=[];
   if(zone==='monsters'){
@@ -2945,7 +3020,7 @@ function showZoneActions(p,zone,idx,fc,x,y){
       if(!fc.faceUp&&!fc.justSet)items.push({icon:'✨',label:'発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
       if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length&&isMain)
         items.push({icon:'💥',label:'効果を使う',fn:`doActivateFromField(${p},'${zone}',${idx})`});
-    } else if(!fc.faceUp&&!fc.justSet&&(isBattle||DS.phase==='standby')){
+    } else if(!fc.faceUp&&!fc.justSet&&isBattle){
       items.push({icon:'🕸️',label:'罠カード発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
     }
   }
@@ -3016,16 +3091,35 @@ function activateOneEff(eff,srcP,dstP,srcCard,srcRef){
     case 'negate_attack':{DS.state='idle';DS.attackSrc=null;addLog(`「${srcCard.name}」の効果で攻撃を無効！`,'lgi');updateStatusBanner();break;}
     case 'negate_effect':{doTarget((pp,z,i)=>DS.players[pp].field[z][i]!=null,(pp,z,i)=>{const fc=DS.players[pp].field[z][i];fc.effUsed=true;addLog(`「${fc.card.name}」の効果を無効にして破壊！`,'lgd');toGrave(pp,z,i);renderDuel();},'無効にするカードを選択');break;}
     case 'search':{
-      const wh=p.what||'any';const fl=wh==='monster'?c=>c.type==='monster':wh==='spell'?c=>c.type==='magic':wh==='trap'?c=>c.type==='trap':()=>true;
-      const fi=src.deck.findIndex(fl);if(fi>=0){src.hand.push(src.deck.splice(fi,1)[0]);addLog(`「${srcCard.name}」の効果でデッキからサーチ！`,'lgs');}else{addLog('対象カードがデッキにありません','');}
+      const wh=p.what||'any';
+      const fl=wh==='monster'?c=>c.type==='monster':wh==='spell'?c=>c.type==='magic':wh==='trap'?c=>c.type==='trap':()=>true;
+      const candidates=src.deck.filter(fl);
+      if(!candidates.length){addLog('デッキに対象カードがありません','');break;}
+      // Show selection modal
+      showCardSelectModal(candidates,`デッキからサーチ（${srcCard.name}）`,chosen=>{
+        const fi=src.deck.findIndex(c=>c===chosen);
+        if(fi>=0){src.hand.push(src.deck.splice(fi,1)[0]);addLog(`「${srcCard.name}」の効果で「${chosen.name}」をサーチ！`,'lgs');renderDuel();}
+      });
       break;
     }
     case 'special_summon':{
-      const from=p.from||'hand';const source=from==='grave'?src.grave:from==='deck'?src.deck:src.hand;
-      const fi=source.findIndex(c=>c.type==='monster');if(fi<0){addLog('特殊召喚できるモンスターがありません','');break;}
+      const from=p.from||'hand';
+      const source=from==='grave'?src.grave:from==='deck'?src.deck:src.hand;
+      const fl=p.cond==='lv4'?c=>c.type==='monster'&&(c.level||1)<=4:p.cond==='lv5'?c=>c.type==='monster'&&(c.level||1)>=5:c=>c.type==='monster';
+      const candidates=source.filter(fl);
+      if(!candidates.length){addLog('特殊召喚できるモンスターがありません','');break;}
       const slot=src.field.monsters.findIndex(x=>!x);if(slot===-1){addLog('モンスターゾーンが満杯です','');break;}
-      const [m]=source.splice(fi,1);src.field.monsters[slot]=mkFC(m,'atk',true);src.field.monsters[slot].justSummoned=false;
-      addLog(`「${srcCard.name}」の効果で「${m.name}」を特殊召喚！`,'lgs');break;
+      showCardSelectModal(candidates,`特殊召喚するモンスターを選択（${srcCard.name}）`,chosen=>{
+        const fi=source.findIndex(c=>c===chosen);
+        if(fi>=0){
+          const [m]=source.splice(fi,1);
+          const sl2=src.field.monsters.findIndex(x=>!x);
+          if(sl2===-1){addLog('モンスターゾーンが満杯です','');src.hand.push(m);return;}
+          src.field.monsters[sl2]=mkFC(m,'atk',true);src.field.monsters[sl2].justSummoned=false;
+          addLog(`「${srcCard.name}」の効果で「${m.name}」を特殊召喚！`,'lgs');renderDuel();
+        }
+      });
+      break;
     }
     case 'banish':{doTarget((pp,z,i)=>{const fc=DS.players[pp].field[z][i];if(!fc)return false;const tgt2=p.target||'opp_monster';if(tgt2==='opp_monster')return pp===dstP&&z==='monsters';if(tgt2==='any')return z==='monsters';return false;},(pp,z,i)=>{const fc=DS.players[pp].field[z][i];DS.players[pp].removed.push(fc.card);DS.players[pp].field[z][i]=null;addLog(`「${fc.card.name}」を除外！`,'lgd');renderDuel();},'除外するカードを選択');break;}
     case 'bounce':{
@@ -3034,7 +3128,23 @@ function activateOneEff(eff,srcP,dstP,srcCard,srcRef){
       else{doTarget((pp,z,i)=>{const fc=DS.players[pp].field[z][i];if(!fc)return false;return tgt2==='any'?true:pp===dstP;},(pp,z,i)=>{const fc=DS.players[pp].field[z][i];DS.players[pp].hand.push(fc.card);DS.players[pp].field[z][i]=null;addLog(`「${fc.card.name}」を手札に戻した！`,'lgd');renderDuel();},'バウンス対象を選択');}
       break;
     }
-    case 'graveyard':{const fi=src.grave.findIndex(c=>p.tgt==='own_monster'?c.type==='monster':true);if(fi<0){addLog('墓地に対象カードがありません','');break;}if(p.tgt==='to_deck'){src.deck.unshift(src.grave.splice(fi,1)[0]);addLog(`墓地のカードをデッキに戻した`,'lgs');}else{src.hand.push(src.grave.splice(fi,1)[0]);addLog(`墓地から手札に回収！`,'lgs');}break;}
+    case 'graveyard':{
+      const fl=p.tgt==='own_monster'?c=>c.type==='monster':()=>true;
+      const candidates=src.grave.filter(fl);
+      if(!candidates.length){addLog('墓地に対象カードがありません','');break;}
+      if(p.tgt==='to_deck'){
+        showCardSelectModal(candidates,`デッキに戻すカードを選択（${srcCard.name}）`,chosen=>{
+          const fi=src.grave.findIndex(c=>c===chosen);
+          if(fi>=0){src.deck.unshift(src.grave.splice(fi,1)[0]);addLog(`墓地のカードをデッキに戻した`,'lgs');renderDuel();}
+        });
+      } else {
+        showCardSelectModal(candidates,`手札に加えるカードを選択（${srcCard.name}）`,chosen=>{
+          const fi=src.grave.findIndex(c=>c===chosen);
+          if(fi>=0){src.hand.push(src.grave.splice(fi,1)[0]);addLog(`墓地から手札に回収！`,'lgs');renderDuel();}
+        });
+      }
+      break;
+    }
     case 'token':{
       const n=parseInt(p.n)||1;const ta=parseInt(p.atk)||0;const td=parseInt(p.def)||0;
       const tc={id:'tok_'+Date.now(),name:'トークン',type:'monster',subtype:'effect',atk:ta,def:td,level:1,attr:'光',race:'戦士族',effects:[],defIcon:'⭐',custom:'トークン',image:null};
@@ -3125,6 +3235,21 @@ function viewGraveModal(p,type){
 function renderDuel(){
   if(!DS.players[0]||!DS.players[1])return;
   updateBars();renderPhaseSteps();renderAllZones();renderHands();renderSides();updatePhaseBtn();
+  // Online: show/hide waiting overlay and disable phase button during opponent's turn
+  const ow=document.getElementById('online-wait');
+  const pb=document.getElementById('phase-btn');
+  if(DS.isOnline){
+    const isMyTurn=DS.turn===DS.viewP;
+    if(ow)ow.classList.toggle('hidden',isMyTurn);
+    if(pb){
+      pb.disabled=!isMyTurn;
+      pb.style.opacity=isMyTurn?'1':'0.4';
+      pb.style.cursor=isMyTurn?'pointer':'not-allowed';
+    }
+  } else {
+    if(ow)ow.classList.add('hidden');
+    if(pb){pb.disabled=false;pb.style.opacity='1';pb.style.cursor='pointer';}
+  }
 }
 
 function flashLP(color){
@@ -3136,21 +3261,21 @@ function flashLP(color){
 }
 
 function updateBars(){
-  const l0=DS.players[0].lp,l1=DS.players[1].lp;
-  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  setEl('p1-lp',l0); setEl('p2-lp',l1);
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const bot=DS.players[DS.viewP],top=DS.players[opp(DS.viewP)];
+  s('p1-lp',bot.lp); s('p2-lp',top.lp);
   const b1=document.getElementById('p1-lpb'),b2=document.getElementById('p2-lpb');
-  if(b1)b1.style.width=Math.min(100,l0/40)+'%';
-  if(b2)b2.style.width=Math.min(100,l1/40)+'%';
-  setEl('p1-name-disp',(DS.turn===0?'▶ ':'')+DS.players[0].name);
-  setEl('p2-name-disp',(DS.turn===1?'▶ ':'')+DS.players[1].name);
-  setEl('p1-hc',DS.players[0].hand.length);
-  setEl('p1-dc',DS.players[0].deck.length);
-  setEl('p1-gc',DS.players[0].grave.length);
-  setEl('p2-dc',DS.players[1].deck.length);
-  setEl('p2-gc',DS.players[1].grave.length);
-  setEl('p2-rmc-bar',(DS.players[1].removed||[]).length);
-  setEl('turn-ind',DS.players[DS.turn].name+'のターン');
+  if(b1)b1.style.width=Math.min(100,bot.lp/40)+'%';
+  if(b2)b2.style.width=Math.min(100,top.lp/40)+'%';
+  s('p1-name-disp',(DS.turn===DS.viewP?'▶ ':'')+bot.name);
+  s('p2-name-disp',(DS.turn===opp(DS.viewP)?'▶ ':'')+top.name);
+  s('p1-hc',bot.hand.length);
+  s('p1-dc',bot.deck.length);
+  s('p1-gc',bot.grave.length);
+  s('p2-dc',top.deck.length);
+  s('p2-gc',top.grave.length);
+  s('p2-rmc-bar',(top.removed||[]).length);
+  s('turn-ind',DS.players[DS.turn].name+'のターン');
 }
 
 function renderPhaseSteps(){
@@ -3162,9 +3287,11 @@ function renderPhaseSteps(){
 
 function doSurrender(){
   if(!DS.active)return;
-  if(!confirm(`${DS.players[DS.turn].name} が降参しますか？`))return;
-  addLog(`${DS.players[DS.turn].name} が降参！`,'lgd');
-  endDuel(opp(DS.turn));
+  const myName=DS.players[DS.viewP].name;
+  if(!confirm(`${myName} が降参しますか？`))return;
+  addLog(`${myName} が降参！`,'lgd');
+  pushAction('surrender',{});
+  endDuel(opp(DS.viewP));
 }
 
 function updatePhaseBtn(){
@@ -3176,11 +3303,9 @@ function updatePhaseBtn(){
   btn.style.background='';
   const isFirst=DS.firstTurn&&DS.turn===0;
   const lbl={
-    draw:'スタンバイへ ▶',
-    standby:'メイン1へ ▶',
-    main1: isFirst ? 'エンドフェイズへ ▶' : 'バトルフェイズへ ▶',
-    battle:'メイン2へ ▶',
-    main2:'エンドフェイズへ ▶',
+    draw:'メインフェイズへ ▶',
+    main1: isFirst ? 'ターン終了 ▶' : 'バトルフェイズへ ▶',
+    battle:'エンドフェイズへ ▶',
     end:'ターンを終了する ▶'
   };
   btn.textContent=lbl[DS.phase]||'次へ ▶';
@@ -3188,10 +3313,11 @@ function updatePhaseBtn(){
 
 function renderAllZones(){
   const isTgt=DS.state==='target';const isAtk=DS.state==='attack';const isTrib=DS.state==='tribute';
-  ['p1','p2'].forEach((pid,pi)=>{
-    const p=pi,pl=DS.players[p];
-    const ap=DS.turn,isAP=p===ap;
-    const isBattle=DS.phase==='battle';const isMain=DS.phase==='main1'||DS.phase==='main2';
+  // bottom = DS.viewP, top = opp(DS.viewP); p1 elements = bottom, p2 elements = top
+  [DS.viewP,opp(DS.viewP)].forEach((p,side)=>{
+    const pid=side===0?'p1':'p2';
+    const pl=DS.players[p];
+    const isBattle=DS.phase==='battle';const isMain=DS.phase==='main1';
     const oppHasM=DS.players[opp(p)].field.monsters.some(x=>x);
 
     // Monster row
@@ -3199,16 +3325,15 @@ function renderAllZones(){
     for(let i=0;i<3;i++){
       const fc=pl.field.monsters[i];
       const isSel=DS.selected&&DS.selected.p===p&&DS.selected.zone==='monsters'&&DS.selected.idx===i;
-      const isTribSel=isTrib&&DS.tribute.selected.includes(i);
-      const canTrib=isTrib&&isAP&&fc!=null;
+      const isTribSel=isTrib&&p===DS.turn&&DS.tribute.selected.includes(i);
       const canTgt=isTgt&&DS.target.filter&&DS.target.filter(p,'monsters',i);
       const isAtkTgt=isAtk&&p===opp(DS.attackSrc.p)&&fc&&fc.faceUp;
       let cls='zone-slot'+(fc?' has-card':'')+(isSel||isTribSel?' sel-slot':'')+(canTgt||isAtkTgt?' can-target':'');
       mHTML+=`<div class="${cls}" onclick="zoneClick(${p},'monsters',${i},event)" onmouseenter="if(DS.players[${p}]?.field.monsters[${i}])showHoverPopupCard(event,DS.players[${p}].field.monsters[${i}].card)" onmouseleave="hideHoverPopup();clearLongPress()" onmousedown="startLongPress(event,${p},${i},'monsters')" ontouchstart="startLongPress(event,${p},${i},'monsters')" onmouseup="clearLongPress()" ontouchend="clearLongPress()">${fc?renderMiniCard(fc,p,'monsters',i):'<span class="zone-lbl">M</span>'}</div>`;
     }
-    // Direct attack area
+    // Direct attack area — show INSTEAD of monster zones when attacker has chosen attack and defender has no monsters
     if(isAtk&&p===opp(DS.attackSrc.p)&&!oppHasM){
-      mHTML=`<div class="zone-slot can-target" style="width:270px;font-size:12px;color:#e86aff;text-align:center;font-family:'Cinzel',serif;letter-spacing:1px" onclick="directClick(${p},event)">⚔ ダイレクトアタック！</div>`;
+      mHTML=`<div class="zone-slot can-target" style="width:278px;height:60px;font-size:13px;color:#e86aff;text-align:center;font-family:'Cinzel',serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;animation:zpulse .6s infinite alternate" onclick="directClick(${p},event)">⚔ ダイレクトアタック！</div>`;
     }
     document.getElementById(`${pid}-mn`).innerHTML=mHTML;
 
@@ -3250,30 +3375,41 @@ function renderMiniCard(fc,p,zone,idx){
 }
 
 function renderHands(){
-  // P2 hand — small face-down backs with count label
-  const p2el=document.getElementById('p2-hand');
-  const p2cnt=DS.players[1].hand.length;
-  p2el.innerHTML=`<div style="display:flex;align-items:center;gap:4px;padding:2px 4px">
-    ${Array.from({length:p2cnt},(_,i)=>`<div class="hand-card-back" data-lp-p="1" data-lp-i="${i}" onmousedown="startLongPress(event,1,${i},'hand')" ontouchstart="startLongPress(event,1,${i},'hand')" onmouseup="clearLongPress()" onmouseleave="clearLongPress()" ontouchend="clearLongPress()"></div>`).join('')}
-    <div style="font-family:'Cinzel',serif;font-size:10px;color:rgba(220,190,120,.5);margin-left:4px">${p2cnt}枚</div>
+  const botP=DS.viewP, topP=opp(DS.viewP);
+  const botPl=DS.players[botP], topPl=DS.players[topP];
+  const HW=68,HH=98;
+
+  // TOP (opponent / other player) — always face-down backs
+  const topEl=document.getElementById('p2-hand');
+  const topCnt=topPl.hand.length;
+  topEl.innerHTML=`<div style="display:flex;align-items:center;gap:4px;padding:2px 4px">
+    ${Array.from({length:topCnt},()=>`<div class="hand-card-back"></div>`).join('')}
+    <div style="font-family:'Cinzel',serif;font-size:10px;color:rgba(220,190,120,.5);margin-left:4px">${topCnt}枚</div>
   </div>`;
 
-  // P1 hand — large face-up cards with long press
-  const p1el=document.getElementById('p1-hand');
-  const pl=DS.players[0];
-  const HW=68,HH=98;
-  p1el.innerHTML=pl.hand.map((c,i)=>{
+  // BOTTOM (my player / current local player)
+  const botEl=document.getElementById('p1-hand');
+  // In online mode: always show your hand; in local: only show when it's your turn
+  const showFaceUp=DS.isOnline||(DS.viewP===DS.turn);
+  if(!showFaceUp){
+    // Other player's hand is hidden until they confirm
+    botEl.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;width:100%;gap:10px;padding:8px">
+      <div style="font-family:'Cinzel',serif;font-size:11px;color:rgba(220,190,120,.5)">画面を渡してください</div>
+    </div>`;
+    return;
+  }
+  botEl.innerHTML=botPl.hand.map((c,i)=>{
     const bg=c.type==='monster'?'var(--mf)':c.type==='magic'?'var(--sf)':'var(--tf)';
     const bd=c.type==='monster'?'var(--gold)':c.type==='magic'?'#22c85a':'#c822e8';
     const img=c.image
       ?`<img src="${c.image}" style="width:100%;height:${HH-26}px;object-fit:cover">`
       :`<div style="height:${HH-26}px;display:flex;align-items:center;justify-content:center;font-size:26px">${c.defIcon||'⚔️'}</div>`;
-    return`<div class="hand-card" id="hc-0-${i}"
-        onclick="handClick(0,${i},event)"
-        onmouseenter="showHoverPopupCard(event,DS.players[0]?.hand[${i}])"
+    return`<div class="hand-card" id="hc-${botP}-${i}"
+        onclick="handClick(${botP},${i},event)"
+        onmouseenter="showHoverPopupCard(event,DS.players[${botP}]?.hand[${i}])"
         onmouseleave="hideHoverPopup();clearLongPress()"
-        onmousedown="startLongPress(event,0,${i},'hand')"
-        ontouchstart="startLongPress(event,0,${i},'hand')"
+        onmousedown="startLongPress(event,${botP},${i},'hand')"
+        ontouchstart="startLongPress(event,${botP},${i},'hand')"
         onmouseup="clearLongPress()"
         ontouchend="clearLongPress()">
       <div style="width:${HW}px;height:${HH}px;background:${bg};border:1.5px solid ${bd};border-radius:5px;overflow:hidden;position:relative;box-shadow:0 3px 10px rgba(0,0,0,.6)">
@@ -3287,15 +3423,12 @@ function renderHands(){
 
 function renderSides(){
   const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
-  [0,1].forEach(p=>{
-    const pid=p===0?'p1':'p2';
-    const pl=DS.players[p];
-    s(`${pid}-dkc`,pl.deck.length);
-    s(`${pid}-gyc`,pl.grave.length);
-    s(`${pid}-exc`,(pl.extra||[]).length);
-    s(`${pid}-rmc`,(pl.removed||[]).length);
-    if(p===1)s('p2-rmc-bar',(pl.removed||[]).length);
-  });
+  const bot=DS.players[DS.viewP],top=DS.players[opp(DS.viewP)];
+  s('p1-dkc',bot.deck.length); s('p1-gyc',bot.grave.length);
+  s('p1-exc',(bot.extra||[]).length); s('p1-rmc',(bot.removed||[]).length);
+  s('p2-dkc',top.deck.length); s('p2-gyc',top.grave.length);
+  s('p2-exc',(top.extra||[]).length); s('p2-rmc',(top.removed||[]).length);
+  s('p2-rmc-bar',(top.removed||[]).length);
 }
 
 function updateStatusBanner(){
@@ -3520,19 +3653,122 @@ function cancelRoom(){
 function listenRoom(){
   if(FB.unsubscribe)FB.unsubscribe();
   const ref=FB.roomRef;
+  let started=false;
+
   const handler=ref.on('value',snap=>{
     const room=snap.val();
     if(!room)return;
-    if(room.status==='ready'&&FB.myRole==='p1'){
-      document.getElementById('waiting-status').textContent=`✅ ${room.p2?.name||'Player 2'} が参加！対戦開始します...`;
-      setTimeout(()=>startOnlineDuel(room),1500);
+
+    // P1: detect P2 joined → start
+    if(room.status==='ready'&&FB.myRole==='p1'&&!started){
+      started=true;
+      const el=document.getElementById('waiting-status');
+      if(el)el.textContent=`✅ ${room.p2?.name||'Player 2'} が参加！対戦開始します...`;
+      setTimeout(()=>{
+        FB.roomRef.update({status:'started'});
+        startOnlineDuel(room);
+      },1200);
     }
-    if(room.status==='started'&&room.gameState){
-      syncOnlineState(room.gameState,room.actions||[]);
+
+    // P2: detect started → start
+    if(room.status==='started'&&FB.myRole==='p2'&&!DS.active&&!started){
+      started=true;
+      startOnlineDuel(room);
+    }
+
+    // Both: sync opponent actions
+    if(DS.active&&room.actions){
+      applyNewActions(room.actions);
     }
   });
   FB.unsubscribe=()=>ref.off('value',handler);
 }
+
+function startOnlineDuel(room){
+  const el=document.getElementById('room-waiting');
+  if(el)el.classList.add('hidden');
+
+  // P1 = index 0 (先攻), P2 = index 1 (後攻)
+  // viewP: P1 sees index 0 at bottom, P2 sees index 1 at bottom
+  const myIdx = FB.myRole==='p1' ? 0 : 1;
+
+  DS.active=true; DS.turn=0; DS.turnCount=1; DS.firstTurn=true;
+  DS.phase='main1'; DS.state='idle'; DS.buffs=[]; DS.log=[];
+  DS.viewP=myIdx; DS.isOnline=true; DS.applyingRemote=false; DS.lastActionSeq=0;
+
+  // Always build with same seed: P1 deck → index 0, P2 deck → index 1
+  DS.players[0]=mkPlayerFromDeckData(room.p1.name,room.p1.deck);
+  DS.players[1]=mkPlayerFromDeckData(room.p2.name,room.p2.deck);
+
+  // Same shuffle seed by sorting hand deterministically after draw
+  drawCard(0,5); drawCard(1,5);
+
+  document.getElementById('duel-setup').classList.add('hidden');
+  document.getElementById('duel-field').classList.remove('hidden');
+  document.getElementById('duel-log').innerHTML='';
+  addLog(`⚔ オンラインデュエル開始！ ${room.p1.name}（先攻）vs ${room.p2.name}（後攻）`,'lgi');
+  addLog(`あなたは ${DS.players[myIdx].name} です`,'lgi');
+  renderDuel();
+}
+
+// ── ACTION SYNC ──
+// Action types: advancePhase, normalSummon, setMonster, setST, activateSpellHand,
+// activateFromField, monsterEff, changePos, flipSummon, attack, surrender
+
+function pushAction(type, payload){
+  if(!DS.isOnline||DS.applyingRemote||!FB.roomRef)return;
+  const seq=Date.now();
+  FB.roomRef.child('actions').push({type,payload:payload||{},by:FB.myRole,seq});
+}
+
+function applyNewActions(actionsObj){
+  if(!actionsObj||DS.applyingRemote)return;
+  const myRole=FB.myRole;
+  const entries=Object.values(actionsObj)
+    .filter(a=>a.by!==myRole && a.seq>DS.lastActionSeq)
+    .sort((a,b)=>a.seq-b.seq);
+  if(!entries.length)return;
+  DS.applyingRemote=true;
+  entries.forEach(a=>{
+    DS.lastActionSeq=Math.max(DS.lastActionSeq,a.seq);
+    applyAction(a);
+  });
+  DS.applyingRemote=false;
+  renderDuel();
+}
+
+function applyAction(a){
+  const p=a.payload||{};
+  switch(a.type){
+    case 'advancePhase': advancePhase(); break;
+    case 'normalSummon':
+      if(p.tributes&&p.tributes.length){
+        p.tributes.forEach(i=>toGrave(p.pl,'monsters',i));
+        const slot=DS.players[p.pl].field.monsters.findIndex(x=>!x);
+        if(slot!==-1){
+          const [c]=DS.players[p.pl].hand.splice(p.idx,1);
+          DS.players[p.pl].field.monsters[slot]=mkFC(c,p.pos,true);
+          DS.players[p.pl].summonedMain=true;
+          addLog(`${DS.players[p.pl].name} が「${c.name}」をリリース召喚！`,'lgs');
+        }
+      } else {
+        tryNormalSummon(p.pl,p.idx,p.pos);
+      }
+      break;
+    case 'setMonster':   doSetMonster(p.pl,p.idx); break;
+    case 'setST':        doSetST(p.pl,p.idx); break;
+    case 'activateSpellHand': doActivateSpellHand(p.pl,p.idx); break;
+    case 'activateFromField': doActivateFromField(p.pl,p.zone,p.idx); break;
+    case 'monsterEff':   doMonsterEff(p.pl,p.idx); break;
+    case 'changePos':    doChangePos(p.pl,p.idx); break;
+    case 'flipSummon':   doFlipSummon(p.pl,p.idx); break;
+    case 'attack':       p.tgt===-1?doAttack(p.tp,-1):doAttack(p.tp,p.tgt); break;
+    case 'surrender':    addLog(`相手が降参しました`,'lgd'); endDuel(FB.myRole==='p1'?0:1); break;
+    case 'log':          addLog(p.msg,p.cls||''); break;
+  }
+}
+
+
 
 function exportDeckForOnline(deck){
   const resolve=ids=>(ids||[]).map(id=>{
@@ -3542,41 +3778,60 @@ function exportDeckForOnline(deck){
   return{main:resolve(deck.main),extra:resolve(deck.extra)};
 }
 
-function startOnlineDuel(room){
-  document.getElementById('room-waiting').classList.add('hidden');
-  const p1deck=room.p1.deck;const p2deck=room.p2.deck;
-  DS.active=true;DS.turn=0;DS.turnCount=1;DS.firstTurn=true;
-  DS.phase='main1';DS.state='idle';DS.buffs=[];DS.log=[];
-  DS.players[0]=mkPlayerFromDeckData(room.p1.name,p1deck);
-  DS.players[1]=mkPlayerFromDeckData(room.p2.name,p2deck);
-  drawCard(0,5);drawCard(1,5);
-  document.getElementById('duel-setup').classList.add('hidden');
-  document.getElementById('duel-field').classList.remove('hidden');
-  document.getElementById('duel-log').innerHTML='';
-  addLog(`⚔ オンラインデュエル開始！ ${room.p1.name} vs ${room.p2.name}`,'lgi');
-  renderDuel();
-  if(FB.roomRef)FB.roomRef.update({status:'started'});
-}
-
 function mkPlayerFromDeckData(name,deckData){
-  const main=shuffle([...(deckData.main||[])]);
+  // Use deterministic order (already shuffled once at room creation)
+  const main=[...(deckData.main||[])];
   const extra=[...(deckData.extra||[])];
   return{name,lp:4000,hand:[],deck:main,grave:[],extra,removed:[],
     field:{monsters:[null,null,null],spells:[null,null,null]},
     summonedMain:false,attackedIdxs:new Set()};
 }
 
-function syncOnlineState(gs,actions){/* reserved for full state sync */}
-
-function pushAction(action){
-  if(!FB.roomRef)return;
-  FB.roomRef.child('actions').push({...action,by:FB.myRole,at:Date.now()});
-}
-
 
 /* ===========================
-   HOME SCREEN
+   CARD SELECT MODAL
 =========================== */
+let _cardSelectCb = null;
+
+function showCardSelectModal(cards, title, cb) {
+  _cardSelectCb = cb;
+  document.getElementById('card-select-title').textContent = title;
+  const content = document.getElementById('card-select-content');
+  content._cards = cards;
+  content.innerHTML = cards.map((c, i) => {
+    const bg = c.type==='monster'?'var(--mf)':c.type==='magic'?'var(--sf)':'var(--tf)';
+    const bd = c.type==='monster'?'var(--gold)':c.type==='magic'?'#22c85a':'#c822e8';
+    const img = c.image
+      ? `<img src="${c.image}" style="width:100%;height:52px;object-fit:cover">`
+      : `<div style="height:52px;display:flex;align-items:center;justify-content:center;font-size:22px">${c.defIcon||'⚔️'}</div>`;
+    const stat = c.type==='monster'
+      ? `<div style="font-size:8px;color:var(--text2);text-align:center;margin-top:2px">${c.atk||0}/${c.def||0}</div>` : '';
+    return `<div style="cursor:pointer;width:60px" onclick="doCardSelect(${i})" title="${esc(c.name)}">
+      <div style="width:60px;height:84px;background:${bg};border:1.5px solid ${bd};border-radius:4px;overflow:hidden;position:relative">
+        ${img}
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.82);font-size:6px;color:#fff;text-align:center;padding:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-family:'Cinzel',serif">${esc(c.name)}</div>
+      </div>${stat}
+    </div>`;
+  }).join('');
+  document.getElementById('card-select-modal').classList.add('open');
+}
+
+function doCardSelect(idx) {
+  const content = document.getElementById('card-select-content');
+  const cards = content._cards;
+  document.getElementById('card-select-modal').classList.remove('open');
+  if (_cardSelectCb && cards && cards[idx]) {
+    const cb = _cardSelectCb;
+    _cardSelectCb = null;
+    cb(cards[idx]);
+  }
+}
+
+function cancelCardSelect() {
+  _cardSelectCb = null;
+  document.getElementById('card-select-modal').classList.remove('open');
+}
+
 function renderHome() {
   // Update stats
   const cc = document.getElementById('home-card-cnt');
@@ -3697,7 +3952,7 @@ document.addEventListener('mousemove', function(ev) {
 =========================== */
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape')return;
-  const modals=['eff-modal','detail-modal','share-modal','import-modal','grave-viewer-modal'];
+  const modals=['eff-modal','detail-modal','share-modal','import-modal','grave-viewer-modal','card-select-modal'];
   for(const id of modals){
     const el=document.getElementById(id);
     if(el&&el.classList.contains('open')){el.classList.remove('open');return;}

@@ -1,0 +1,3765 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MyCard Duel</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cinzel+Decorative:wght@400;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#06060f;--bg2:#0d0d1e;--bg3:#131328;--bg4:#1a1a36;--border:rgba(180,160,255,.09);--border2:rgba(180,160,255,.18);--gold:#c8a327;--gold2:#e8c040;--gold3:#8a6e15;--red:#c0392b;--green:#1a8a4a;--text:#ede8e0;--text2:#7a7080;--text3:#3a3848;--mf:linear-gradient(160deg,#8b6010 0%,#5a3c08 45%,#3a2506 100%);--mb:#c8a327;--sf:linear-gradient(160deg,#0d5520 0%,#083818 45%,#042510 100%);--sb:#22c85a;--tf:linear-gradient(160deg,#55096a 0%,#38044a 45%,#25022f 100%);--tb:#c822e8;--nf:linear-gradient(160deg,#7a5c1a 0%,#503c08 45%,#372804 100%);--r:8px;--rl:12px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+#app{max-width:1400px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+.app-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:58px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:100}
+.app-logo{font-family:'Cinzel Decorative',serif;font-size:17px;color:var(--gold);letter-spacing:2px}
+.nav-tabs{display:flex;gap:2px}
+.nav-tab{background:none;border:none;color:var(--text2);font-family:'Noto Sans JP',sans-serif;font-size:13px;padding:7px 14px;cursor:pointer;border-radius:var(--r);transition:.2s;display:flex;align-items:center;gap:5px;white-space:nowrap;border-bottom:2px solid transparent}
+.nav-tab:hover{background:var(--bg3);color:var(--text)}
+.nav-tab.active{background:var(--bg4);color:var(--gold2);border-bottom-color:var(--gold)}
+.main-content{flex:1;overflow-y:auto;padding:20px 16px}
+.section{display:none}.section.active{display:block}
+.section-title{font-family:'Cinzel',serif;font-size:19px;color:var(--gold);margin-bottom:20px;padding-bottom:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.form-row{display:grid;gap:10px;margin-bottom:10px}
+.cols-2{grid-template-columns:1fr 1fr}.cols-3{grid-template-columns:1fr 1fr 1fr}.cols-1{grid-template-columns:1fr}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.8px}
+.form-label .req{color:var(--red);margin-left:2px}
+input[type=text],input[type=number],select,textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:var(--r);padding:7px 9px;font-family:'Noto Sans JP',sans-serif;font-size:13px;outline:none;transition:border-color .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold3)}
+select{cursor:pointer}select option{background:var(--bg3)}
+textarea{resize:vertical;min-height:70px;line-height:1.6}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 14px;border-radius:var(--r);font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:.2s;border:1px solid transparent;white-space:nowrap}
+.btn-primary{background:var(--gold3);color:#fff;border-color:var(--gold)}.btn-primary:hover{background:var(--gold)}
+.btn-outline{background:transparent;color:var(--text2);border-color:var(--border2)}.btn-outline:hover{background:var(--bg4);color:var(--text)}
+.btn-danger{background:transparent;color:#e74c3c;border-color:rgba(231,76,60,.3)}.btn-danger:hover{background:rgba(231,76,60,.1)}
+.btn-sm{padding:4px 9px;font-size:12px}.btn-lg{padding:11px 22px;font-size:15px}.btn-full{width:100%}
+.btn-group{display:flex;gap:6px;flex-wrap:wrap}
+
+/* TYPE SELECTOR */
+.type-selector{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:14px}
+.type-btn{padding:10px 6px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;text-align:center;transition:.2s;font-family:'Noto Sans JP',sans-serif}
+.type-btn:hover{border-color:var(--border2);color:var(--text)}
+.type-btn .ti{font-size:18px;display:block;margin-bottom:3px}.type-btn .tn{font-size:11px;font-weight:500}
+.type-btn.active.monster{background:rgba(139,96,16,.3);border-color:var(--gold);color:var(--gold2)}
+.type-btn.active.magic{background:rgba(13,85,32,.3);border-color:#22c85a;color:#5ae888}
+.type-btn.active.trap{background:rgba(85,9,106,.3);border-color:#c822e8;color:#e86aff}
+.subtype-selector{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.subtype-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;transition:.2s}
+.subtype-btn:hover{border-color:var(--border2);color:var(--text)}
+.subtype-btn.active{border-color:var(--gold);background:rgba(200,163,39,.15);color:var(--gold2)}
+
+/* IMAGE UPLOAD */
+.image-upload-area{border:2px dashed var(--border);border-radius:var(--rl);padding:16px;text-align:center;cursor:pointer;transition:.2s;position:relative;min-height:110px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+.image-upload-area:hover,.image-upload-area.has-image{border-style:solid;border-color:var(--gold3);background:rgba(200,163,39,.04)}
+.image-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-preview{max-height:90px;max-width:100%;object-fit:contain;border-radius:4px}
+.upload-hint{font-size:11px;color:var(--text2)}
+.default-icons{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.di-btn{width:38px;height:38px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s}
+.di-btn:hover{border-color:var(--gold3)}.di-btn.sel{border-color:var(--gold);background:rgba(200,163,39,.15)}
+
+/* LEVEL SELECTOR */
+.level-selector{display:flex;gap:3px;flex-wrap:wrap}
+.lv-star{width:26px;height:26px;border-radius:50%;border:1px solid var(--border);background:var(--bg3);color:var(--text3);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.lv-star.active{background:rgba(200,163,39,.2);border-color:var(--gold);color:var(--gold)}
+.lv-star:hover{border-color:var(--gold3);color:var(--gold3)}
+
+/* EFFECT */
+.effect-block{background:var(--bg4);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;margin-bottom:6px;position:relative}
+.eff-block-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.eff-block-type{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.8px}
+.eff-block-text{font-size:11px;color:var(--text2);font-style:italic;background:var(--bg3);padding:5px 7px;border-radius:4px;line-height:1.5}
+.eff-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:2px 6px;border-radius:4px;font-size:13px}
+.eff-del-btn:hover{color:var(--red);background:rgba(192,57,43,.1)}
+.add-eff-btn{width:100%;padding:7px;border:1px dashed var(--border2);border-radius:var(--r);background:none;color:var(--text2);cursor:pointer;font-size:12px;transition:.2s;margin-top:2px}
+.add-eff-btn:hover{border-color:var(--gold3);color:var(--gold3);background:rgba(200,163,39,.05)}
+
+/* CARD VISUAL */
+.card-visual{width:220px;height:320px;border-radius:9px;border:3px solid var(--gold);position:relative;overflow:hidden;flex-shrink:0;font-family:'Noto Sans JP',sans-serif;display:flex;flex-direction:column}
+.card-visual.cv-monster{background:var(--mf);border-color:var(--mb)}
+.card-visual.cv-normal{background:var(--nf);border-color:#c8a820}
+.card-visual.cv-magic{background:var(--sf);border-color:var(--sb)}
+.card-visual.cv-trap{background:var(--tf);border-color:var(--tb)}
+.card-visual.cv-quick{background:var(--sf);border-color:#30c8e8}
+.card-visual.cv-continuous{border-color:#c8e030}
+.card-visual.cv-counter{background:var(--tf);border-color:#e83060}
+.cv-inner{display:flex;flex-direction:column;height:100%;padding:5px 7px}
+.cv-name-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.cv-name{font-family:'Cinzel',serif;font-size:9px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv-stars{color:var(--gold2);font-size:8px;letter-spacing:-1px;flex-shrink:0}
+.cv-attr{position:absolute;top:7px;right:7px;width:18px;height:18px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;z-index:2}
+.cv-attr.a-光{background:#d4a000;color:#fff}.cv-attr.a-闇{background:#4a0080;color:#fff}
+.cv-attr.a-炎{background:#c0200a;color:#fff}.cv-attr.a-水{background:#0a60c0;color:#fff}
+.cv-attr.a-風{background:#0a8040;color:#fff}.cv-attr.a-地{background:#6a4020;color:#fff}
+.cv-attr.a-神{background:linear-gradient(135deg,#c8a000,#8a30c0);color:#fff}
+.cv-img{margin:0 1px 3px;height:126px;background:rgba(0,0,0,.4);border:1.5px solid rgba(255,255,255,.12);border-radius:3px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cv-img img{width:100%;height:100%;object-fit:cover}
+.cv-img .cv-def-icon{font-size:38px;opacity:.6}
+.cv-type-line{font-size:8px;color:rgba(255,255,255,.65);background:rgba(0,0,0,.3);padding:1px 4px;border-radius:2px;margin-bottom:2px;display:inline-block}
+.cv-subtype-tag{font-size:8px;color:rgba(255,255,255,.55);position:absolute;top:28px;right:7px;background:rgba(0,0,0,.4);padding:1px 4px;border-radius:2px}
+.cv-eff-box{background:rgba(235,220,190,.88);border-radius:3px;padding:4px 5px;flex:1;overflow:hidden;min-height:0}
+.cv-eff-text{font-size:7px;color:#1a0a00;line-height:1.45;font-family:'Noto Sans JP',sans-serif}
+.cv-stats{display:flex;justify-content:flex-end;gap:8px;margin-top:3px}
+.cv-stat{font-family:'Cinzel',serif;font-size:8.5px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.9)}
+.cv-no-stats{height:14px}
+
+/* CARD SCALE WRAPPER */
+.card-scale-wrap{position:relative;overflow:hidden;display:block}
+
+/* CREATOR LAYOUT */
+.creator-layout{display:grid;grid-template-columns:248px 1fr;gap:22px;align-items:start}
+.creator-preview-panel{position:sticky;top:78px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.preview-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:1px}
+
+/* MY CARDS */
+.cards-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filter-tabs{display:flex;gap:3px}
+.filter-tab{padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);font-size:12px;cursor:pointer;transition:.2s}
+.filter-tab:hover{border-color:var(--border2);color:var(--text)}
+.filter-tab.active{background:var(--bg4);border-color:var(--gold3);color:var(--gold2)}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:10px}
+.card-thumb-wrap{position:relative;cursor:pointer}
+.card-thumb-wrap:hover .cta{opacity:1}
+.cta{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:10px 5px 5px;display:flex;gap:3px;opacity:0;transition:opacity .2s;border-radius:0 0 5px 5px}
+.cta-btn{flex:1;padding:3px 0;border-radius:3px;border:none;font-size:10px;cursor:pointer;background:rgba(255,255,255,.15);color:#fff;transition:.15s;font-family:'Noto Sans JP',sans-serif}
+.cta-btn:hover{background:rgba(255,255,255,.3)}.cta-btn.danger:hover{background:rgba(192,57,43,.5)}
+.card-thumb-name{text-align:center;font-size:10px;color:var(--text2);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.empty-state{text-align:center;padding:50px 20px;color:var(--text2);grid-column:1/-1}
+.empty-icon{font-size:44px;margin-bottom:10px;opacity:.35;display:block}
+
+/* DECK BUILDER */
+.deck-builder-layout{display:grid;grid-template-columns:1fr 278px;gap:14px;align-items:start}
+.deck-name-input{flex:1;font-family:'Cinzel',serif;font-size:16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);padding:4px 0;outline:none}
+.deck-name-input:focus{border-bottom-color:var(--gold3)}
+.deck-name-input::placeholder{color:var(--text3)}
+.deck-zone-label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.count-badge{background:var(--bg4);border:1px solid var(--border);border-radius:10px;padding:1px 8px;font-size:10px;color:var(--text2)}
+.count-badge.ok{border-color:var(--green);color:#4ae878}.count-badge.bad{border-color:var(--red);color:#e84a3a}
+.deck-slots{display:flex;flex-wrap:wrap;gap:4px;min-height:60px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px}
+.deck-card-slot{width:52px;height:76px;border-radius:3px;overflow:hidden;position:relative;cursor:pointer;border:1px solid var(--border)}
+.deck-card-slot:hover .rm-ov{display:flex}
+.rm-ov{position:absolute;inset:0;background:rgba(192,57,43,.75);display:none;align-items:center;justify-content:center;font-size:16px}
+.card-pool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;max-height:480px;overflow-y:auto;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px}
+.pool-card{position:relative;cursor:pointer;transition:transform .15s}
+.pool-card:hover{transform:scale(1.06)}
+.pool-card:hover .add-ov{display:flex}
+.add-ov{position:absolute;inset:0;background:rgba(200,163,39,.75);border-radius:3px;display:none;align-items:center;justify-content:center;font-size:18px}
+.in-deck-badge{position:absolute;top:2px;right:2px;background:var(--gold);color:#000;font-size:8px;font-weight:700;width:14px;height:14px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:3}
+
+/* MY DECKS */
+.deck-list{display:grid;gap:10px}
+.deck-list-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;display:flex;align-items:center;gap:14px;transition:.2s}
+.deck-list-item:hover{border-color:var(--border2)}
+.deck-mini{display:flex;position:relative;width:78px;height:48px;flex-shrink:0}
+.dmc{width:30px;height:44px;border-radius:3px;border:1px solid rgba(255,255,255,.2);position:absolute;top:2px}
+.dmc:nth-child(1){left:0;z-index:1}.dmc:nth-child(2){left:13px;z-index:2}.dmc:nth-child(3){left:26px;z-index:3}
+.deck-info{flex:1}
+.deck-info-name{font-family:'Cinzel',serif;font-size:15px;color:var(--text);margin-bottom:3px}
+.deck-info-stats{font-size:11px;color:var(--text2);display:flex;gap:10px}
+.deck-actions{display:flex;gap:5px;flex-shrink:0}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:1000;display:none;align-items:center;justify-content:center;padding:14px}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rl);padding:18px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
+.modal-title{font-family:'Cinzel',serif;font-size:15px;color:var(--gold);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.modal-footer{margin-top:14px;display:flex;justify-content:flex-end;gap:7px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:72px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:9px 14px;font-size:12px;max-width:280px;animation:toastIn .3s ease;pointer-events:none}
+.toast.success{border-color:var(--green);color:#4ae878}.toast.error{border-color:var(--red);color:#e84a3a}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* MOBILE NAV */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);z-index:100;height:54px;grid-template-columns:repeat(5,1fr)}
+.mn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;background:none;border:none;color:var(--text2);cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:color .15s;padding:4px 0}
+.mn-item .ni{font-size:17px}.mn-item .nl{font-size:8px}
+.mn-item.active{color:var(--gold)}
+
+/* DETAIL CARD */
+.detail-card-wrap{display:flex;justify-content:center;margin-bottom:14px}
+.detail-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:12px}
+.df-item{background:var(--bg3);padding:5px 8px;border-radius:5px}
+.df-label{font-size:10px;color:var(--text2);margin-bottom:2px}
+.df-val{color:var(--text);font-weight:500}
+
+/* HIDDEN / UTILS */
+.hidden{display:none!important}
+hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
+.badge{display:inline-flex;align-items:center;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:500}
+.badge-m{background:rgba(139,96,16,.3);color:var(--gold2);border:1px solid var(--gold3)}
+.badge-s{background:rgba(13,85,32,.3);color:#5ae888;border:1px solid #22c85a}
+.badge-t{background:rgba(85,9,106,.3);color:#e86aff;border:1px solid #c822e8}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .app-header{padding:0 10px}
+  .app-logo{font-size:13px}
+  .nav-tabs{display:none}
+  .mobile-nav{display:grid}
+  .main-content{padding:12px 10px 68px}
+  .creator-layout{grid-template-columns:1fr}
+  .creator-preview-panel{position:static;order:-1;padding:10px 0 14px;border-bottom:1px solid var(--border);margin-bottom:12px}
+  .deck-builder-layout{grid-template-columns:1fr}
+  .cols-3{grid-template-columns:1fr 1fr}
+  .cards-grid{grid-template-columns:repeat(auto-fill,minmax(95px,1fr))}
+  .card-pool-grid{max-height:240px}
+  /* Duel field mobile */
+  .zone-slot{width:clamp(48px,18vw,80px);height:clamp(68px,26vw,110px)}
+  .small-zone{width:clamp(34px,9vw,48px);font-size:8px}
+  .field-row{gap:clamp(2px,1.2vw,5px);padding:1px 4px}
+  .player-bar{padding:3px 8px}
+  .lp-text{font-size:12px}
+  .lp-bar-wrap{width:90px}
+  .hand-area{min-height:90px;padding:4px 6px;gap:3px}
+  .p2-hand-backs{min-height:42px;padding:2px 6px}
+  .hand-card-back{width:28px;height:40px}
+  .duel-log{height:52px;font-size:9px}
+  .phase-bar{padding:3px 6px}
+  .phase-step{font-size:8px;padding:2px 4px}
+  .phase-btn{font-size:10px;padding:4px 8px}
+}
+@media(max-width:420px){
+  .cards-grid{grid-template-columns:repeat(3,1fr)}
+  .zone-slot{width:clamp(42px,15vw,60px);height:clamp(60px,22vw,86px)}
+  .small-zone{width:clamp(28px,8vw,40px);font-size:7px}
+  .field-row{gap:2px;padding:1px 2px}
+}
+/* DUEL */
+.main-content.duel-mode{padding:0!important;overflow:hidden!important;}
+#sec-duel.active{display:flex!important;flex-direction:column!important;height:100%!important;overflow:hidden!important;}
+
+/* ── DUEL FIELD SHELL ── */
+.duel-field{display:flex;flex-direction:column;height:100%;overflow:hidden;user-select:none;
+  background:
+    linear-gradient(180deg,rgba(60,35,10,.18) 0%,rgba(40,22,6,.0) 40%,rgba(40,22,6,.0) 60%,rgba(60,35,10,.18) 100%),
+    repeating-linear-gradient(92deg,rgba(180,120,50,.06) 0px,rgba(180,120,50,.06) 1px,transparent 1px,transparent 60px),
+    repeating-linear-gradient(180deg,rgba(180,120,50,.04) 0px,rgba(180,120,50,.04) 1px,transparent 1px,transparent 40px),
+    linear-gradient(160deg,#c8922a 0%,#e6b84a 18%,#d4a030 32%,#e8c050 50%,#d09828 68%,#c88820 82%,#b87820 100%);
+}
+
+/* ── PLAYER BAR ── */
+.player-bar{display:flex;align-items:center;justify-content:space-between;padding:4px 12px;
+  background:rgba(8,5,0,.72);backdrop-filter:blur(4px);
+  border-bottom:1px solid rgba(200,160,60,.25);flex-shrink:0}
+.player-name{font-family:'Cinzel',serif;font-size:12px;color:#f0e0b0;margin-bottom:1px;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.player-stats{font-size:10px;color:rgba(220,190,120,.6);display:flex;gap:8px}
+.lp-bar-wrap{width:120px}
+.lp-bar-track{height:5px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;margin-top:3px;border:1px solid rgba(255,255,255,.08)}
+.lp-bar-fill{height:100%;border-radius:3px;transition:width .5s}
+.lp-bar-fill.p1{background:linear-gradient(90deg,#1a8a4a,#4ae878)}
+.lp-bar-fill.p2{background:linear-gradient(90deg,#c0392b,#e74c3c)}
+.lp-text{font-family:'Cinzel',serif;font-size:14px;color:#f0e080;text-shadow:0 0 8px rgba(240,220,80,.4)}
+
+/* ── HAND AREA ── */
+.hand-area{display:flex;align-items:flex-end;padding:5px 10px 4px;gap:5px;overflow-x:auto;flex-shrink:0;
+  background:linear-gradient(180deg,rgba(30,18,4,.0) 0%,rgba(20,12,2,.55) 100%);
+  min-height:112px;scrollbar-width:thin}
+.hand-area::-webkit-scrollbar{height:3px}
+.hand-area::-webkit-scrollbar-thumb{background:rgba(200,160,60,.3);border-radius:2px}
+.hand-card{flex-shrink:0;cursor:pointer;transition:transform .15s;position:relative}
+.hand-card:hover{transform:translateY(-10px) scale(1.04)}
+.hand-card.long-pressing{transform:translateY(-14px) scale(1.08);filter:brightness(1.3)}
+.p2-hand-backs{display:flex;align-items:center;padding:3px 10px;gap:3px;overflow-x:auto;flex-shrink:0;
+  background:linear-gradient(0deg,rgba(30,18,4,.0) 0%,rgba(20,12,2,.4) 100%);min-height:56px}
+.hand-card-back{flex-shrink:0;width:36px;height:52px;border-radius:3px;
+  background:linear-gradient(135deg,#0e0e3a,#1e0e50,#0e0e3a);
+  border:1.5px solid rgba(120,80,200,.5);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.5)}
+
+/* ── PLAY MAT (center field) ── */
+.field-area{flex:1;display:flex;flex-direction:column;justify-content:center;
+  gap:0;overflow:hidden;position:relative}
+.field-mat{
+  background:
+    radial-gradient(ellipse 85% 90% at 50% 50%,rgba(30,80,35,.82) 0%,rgba(20,60,25,.65) 60%,transparent 100%),
+    linear-gradient(160deg,#c8922a 0%,#e6b84a 18%,#d4a030 32%,#e8c050 50%,#d09828 68%,#c88820 82%,#b87820 100%);
+  padding:6px 0 4px;
+  border-top:2px solid rgba(80,140,70,.35);
+  border-bottom:2px solid rgba(80,140,70,.35);
+  position:relative;
+}
+.field-mat::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(0,0,0,.06) 19px,rgba(0,0,0,.06) 20px),
+             repeating-linear-gradient(90deg,transparent,transparent 19px,rgba(0,0,0,.04) 19px,rgba(0,0,0,.04) 20px);
+  pointer-events:none;
+}
+
+/* ── FIELD ROWS ── */
+.field-row{display:flex;align-items:center;justify-content:center;gap:5px;padding:2px 8px;flex-shrink:0;position:relative;z-index:1}
+.field-side{display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0}
+
+/* ── ZONE SLOTS ── */
+.zone-slot{
+  width:80px;height:110px;
+  border:1.5px dashed rgba(200,220,160,.2);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:border-color .15s,box-shadow .15s;
+  position:relative;
+  background:rgba(0,0,0,.15);
+  flex-shrink:0;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.3)
+}
+.zone-slot:hover{border-color:rgba(200,220,160,.4);box-shadow:inset 0 1px 3px rgba(0,0,0,.3),0 0 6px rgba(200,220,160,.15)}
+.zone-slot.has-card{border-style:solid;border-color:rgba(255,255,255,.12)}
+.zone-slot.can-target{border-color:#4ae878!important;border-style:solid!important;animation:zpulse .6s infinite alternate;box-shadow:0 0 10px rgba(74,232,120,.35)!important}
+.zone-slot.sel-slot{border-color:var(--gold)!important;border-style:solid!important;box-shadow:0 0 10px rgba(200,163,39,.35)!important}
+@keyframes zpulse{to{border-color:#2ae85a;box-shadow:0 0 12px rgba(74,232,120,.5)}}
+.zone-lbl{font-size:10px;color:rgba(200,220,160,.3);font-family:'Cinzel',serif;letter-spacing:1px}
+
+/* ── SIDE ZONES ── */
+.small-zone{
+  width:48px;height:30px;border-radius:5px;
+  background:rgba(0,0,0,.35);border:1px solid rgba(200,160,60,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;color:rgba(220,190,120,.6);cursor:pointer;
+  position:relative;transition:.15s;white-space:nowrap;padding:0 3px;
+  font-family:'Cinzel',serif;letter-spacing:.5px
+}
+.small-zone:hover{border-color:rgba(200,160,60,.45);color:#f0d070}
+.sz-cnt{position:absolute;top:-5px;right:-5px;background:#1a1a36;border:1px solid var(--border);border-radius:8px;padding:0 4px;font-size:8px;color:var(--gold);min-width:15px;text-align:center}
+
+/* ── PHASE BAR ── */
+.phase-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 10px;
+  background:rgba(6,4,0,.78);
+  border-top:1px solid rgba(200,160,60,.2);
+  border-bottom:1px solid rgba(200,160,60,.2);
+  flex-shrink:0;gap:6px;z-index:2;position:relative;
+}
+.phase-steps{display:flex;gap:3px;flex:1;overflow-x:auto;scrollbar-width:none}
+.phase-steps::-webkit-scrollbar{display:none}
+.phase-step{font-size:10px;padding:2px 7px;border-radius:4px;color:rgba(200,160,60,.3);border:1px solid transparent;white-space:nowrap;flex-shrink:0;font-family:'Cinzel',serif}
+.phase-step.cur{background:rgba(200,163,39,.18);border-color:var(--gold3);color:var(--gold);text-shadow:0 0 6px rgba(200,163,39,.5)}
+.phase-step.done{color:rgba(200,160,60,.15)}
+.phase-btn{font-size:11px;padding:5px 12px;border-radius:var(--r);background:linear-gradient(135deg,#7a5010,#c8a327);border:1px solid #e8c040;color:#fff;cursor:pointer;white-space:nowrap;font-family:'Cinzel',serif;letter-spacing:.5px;text-shadow:0 1px 2px rgba(0,0,0,.5);flex-shrink:0}
+.phase-btn:hover{background:linear-gradient(135deg,#9a6818,#e8c040)}
+.turn-indicator{font-size:10px;padding:2px 10px;border-radius:10px;background:rgba(200,163,39,.12);border:1px solid var(--gold3);color:var(--gold);white-space:nowrap;flex-shrink:0;font-family:'Cinzel',serif}
+
+/* ── LOG ── */
+.duel-log{height:64px;overflow-y:auto;padding:4px 12px;background:rgba(0,0,0,.65);border-top:1px solid rgba(200,160,60,.15);flex-shrink:0;scrollbar-width:thin}
+.duel-log::-webkit-scrollbar{width:3px}
+.duel-log::-webkit-scrollbar-thumb{background:rgba(200,160,60,.2);border-radius:2px}
+.log-entry{font-size:10px;color:rgba(200,180,120,.55);line-height:1.5}
+.log-entry.lgi{color:var(--gold2)}.log-entry.lgd{color:#e84a3a}.log-entry.lgs{color:#4ae878}
+
+/* ── ACTION MENU ── */
+.action-menu{position:fixed;z-index:600;background:rgba(10,7,2,.95);border:1px solid rgba(200,160,60,.35);border-radius:var(--rl);padding:4px;min-width:160px;box-shadow:0 8px 28px rgba(0,0,0,.95),0 0 0 1px rgba(200,160,60,.1)}
+.action-menu-item{display:flex;align-items:center;gap:8px;padding:9px 14px;border-radius:var(--r);cursor:pointer;font-size:12px;color:#e0cfa0;transition:.15s}
+.action-menu-item:hover{background:rgba(200,163,39,.15);color:var(--gold2)}
+
+/* ── STATUS BANNER ── */
+.status-banner{margin:2px 10px;border-radius:var(--r);padding:5px 12px;text-align:center;font-size:11px;flex-shrink:0;backdrop-filter:blur(4px)}
+.trib-banner{background:rgba(200,50,0,.15);border:1px solid rgba(200,100,50,.4);color:#e87040}
+.tgt-banner{background:rgba(50,200,50,.1);border:1px solid rgba(50,200,100,.35);color:#4ae878}
+.atk-banner{background:rgba(200,50,200,.1);border:1px solid rgba(200,50,200,.35);color:#e86aff}
+
+/* ── DUEL END ── */
+.duel-end-screen{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:900;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.duel-end-title{font-family:'Cinzel Decorative',serif;font-size:26px;color:var(--gold);text-align:center;text-shadow:0 0 20px rgba(200,163,39,.6)}
+.duel-end-winner{font-family:'Cinzel',serif;font-size:19px;color:var(--text);text-align:center;margin-bottom:8px}
+
+/* ── LONG PRESS HINT ── */
+.lp-ring{position:absolute;inset:-3px;border-radius:6px;border:2px solid var(--gold2);opacity:0;animation:lpgrow .4s ease forwards;pointer-events:none;z-index:10}
+@keyframes lpgrow{0%{opacity:0;inset:-1px}100%{opacity:1;inset:-4px}}
+.rank-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:12px}
+.rank-btn{padding:7px 4px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3);cursor:pointer;text-align:center;transition:.2s;font-family:'Noto Sans JP',sans-serif}
+.rank-btn .ri{font-size:14px;display:block;margin-bottom:2px}.rank-btn .rl{font-size:9px;font-weight:600;display:block}.rank-btn .rp{font-size:8px;color:var(--text2);display:block}
+.rank-btn.active.rn{background:rgba(80,80,100,.3);border-color:#aaa;color:#ddd}
+.rank-btn.active.rr{background:rgba(30,80,200,.2);border-color:#4488ff;color:#88aaff}
+.rank-btn.active.rsr{background:rgba(160,20,160,.2);border-color:#cc44ff;color:#dd88ff}
+.rank-btn.active.rlg{background:rgba(180,140,0,.2);border-color:var(--gold);color:var(--gold2)}
+.cost-meter-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;margin-bottom:10px}
+.cost-meter-label{display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:5px}
+.cost-meter-val{font-weight:700;transition:color .3s}
+.cost-meter-val.ok{color:#4ae878}.cost-meter-val.warn{color:var(--gold2)}.cost-meter-val.over{color:#e84a3a}
+.cost-bar-track{height:7px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.cost-bar-fill{height:100%;border-radius:4px;transition:width .3s,background .3s}
+.cost-breakdown{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+.cost-chip{font-size:9px;padding:1px 5px;border-radius:8px;background:var(--bg4);color:var(--text2);border:1px solid var(--border)}
+.rank-badge-card{position:absolute;top:3px;left:3px;font-size:7px;font-weight:700;padding:1px 4px;border-radius:3px;z-index:3}
+.rb-normal{background:rgba(80,80,80,.8);color:#ccc}
+.rb-rare{background:rgba(20,60,200,.8);color:#9ac}
+.rb-superrare{background:rgba(140,20,180,.8);color:#daf}
+.rb-legend{background:rgba(160,120,0,.85);color:#fc5}
+.cost-badge-card{position:absolute;bottom:3px;left:3px;font-size:7px;font-weight:700;padding:1px 4px;border-radius:3px;background:rgba(0,0,0,.75);z-index:3}
+.cost-ok{color:#4ae878}.cost-warn{color:var(--gold2)}.cost-over{color:#e84a3a}
+/* DUEL MODE */
+.duel-mode-sel{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px}
+.dmode-btn{padding:10px;border-radius:var(--rl);border:1px solid var(--border);background:var(--bg3);cursor:pointer;text-align:center;font-family:'Noto Sans JP',sans-serif;transition:.2s}
+.dmode-btn:hover{border-color:var(--border2)}.dmode-btn.active{border-color:var(--gold);background:rgba(200,163,39,.08)}
+.dmode-btn .di{font-size:18px;display:block;margin-bottom:3px}.dmode-btn .dl{font-size:12px;font-weight:500;color:var(--text)}.dmode-btn .dd{font-size:10px;color:var(--text2)}
+.deck-cost-info{font-size:11px;padding:6px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.starter-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;background:rgba(200,163,39,.12);border:1px solid var(--gold3);color:var(--gold);margin-left:6px}
+
+/* ── HOME SCREEN ── */
+.home-screen{min-height:100%;display:flex;flex-direction:column;overflow-y:auto}
+.home-hero{
+  text-align:center;padding:48px 20px 32px;
+  background:linear-gradient(180deg,rgba(0,0,0,.4) 0%,transparent 100%);
+  flex-shrink:0;
+}
+.home-logo{font-family:'Cinzel Decorative',serif;font-size:clamp(22px,5vw,42px);color:var(--gold);letter-spacing:4px;text-shadow:0 0 30px rgba(200,163,39,.5);margin-bottom:6px}
+.home-sub{font-size:12px;color:var(--text2);letter-spacing:2px;margin-bottom:32px}
+.home-nav{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;padding:0 20px 20px;max-width:640px;margin:0 auto;width:100%}
+.home-tile{
+  border-radius:16px;border:1px solid rgba(255,255,255,.08);
+  cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;
+  padding:28px 16px 22px;text-align:center;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+}
+.home-tile::before{content:'';position:absolute;inset:0;opacity:.08;transition:opacity .2s}
+.home-tile:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+.home-tile:hover::before{opacity:.15}
+.home-tile:active{transform:scale(.97)}
+.ht-create{background:linear-gradient(145deg,#1a1200,#2a1e00);border-color:rgba(200,163,39,.3)}
+.ht-create::before{background:var(--gold)}
+.ht-create:hover{border-color:var(--gold3)}
+.ht-cards{background:linear-gradient(145deg,#0a0a20,#141428);border-color:rgba(120,80,200,.3)}
+.ht-cards::before{background:#7850c8}
+.ht-cards:hover{border-color:rgba(120,80,200,.6)}
+.ht-deck{background:linear-gradient(145deg,#001a10,#002818);border-color:rgba(30,180,90,.3)}
+.ht-deck::before{background:#1eb45a}
+.ht-deck:hover{border-color:rgba(30,180,90,.6)}
+.ht-duel{background:linear-gradient(145deg,#200008,#380010);border-color:rgba(220,50,80,.3)}
+.ht-duel::before{background:#dc3250}
+.ht-duel:hover{border-color:rgba(220,50,80,.6)}
+.ht-icon{font-size:36px;display:block;margin-bottom:4px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.ht-label{font-family:'Cinzel',serif;font-size:14px;color:var(--text);font-weight:600}
+.ht-desc{font-size:10px;color:var(--text2);line-height:1.4}
+.home-stats{display:flex;justify-content:center;gap:24px;padding:12px 20px 28px;flex-wrap:wrap}
+.hstat{text-align:center}
+.hstat-val{font-family:'Cinzel',serif;font-size:20px;color:var(--gold)}
+.hstat-lbl{font-size:9px;color:var(--text2);margin-top:1px}
+
+/* ── CARD HOVER POPUP ── */
+#card-hover-popup{
+  position:fixed;z-index:700;pointer-events:none;
+  width:280px;
+  background:linear-gradient(160deg,#0d0d20,#181830);
+  border:1px solid rgba(180,160,255,.25);
+  border-radius:12px;
+  box-shadow:0 12px 40px rgba(0,0,0,.95),0 0 0 1px rgba(120,80,200,.15);
+  padding:12px;
+  opacity:0;transition:opacity .15s;
+  display:none;
+}
+#card-hover-popup.visible{opacity:1;display:block}
+.chp-top{display:flex;gap:10px;margin-bottom:10px}
+.chp-img{width:70px;height:98px;border-radius:5px;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(255,255,255,.1)}
+.chp-img img,.chp-img .chp-icon{width:100%;height:100%;object-fit:cover;display:flex;align-items:center;justify-content:center;font-size:30px}
+.chp-info{flex:1;min-width:0}
+.chp-name{font-family:'Cinzel',serif;font-size:13px;color:#f0e8c0;margin-bottom:4px;line-height:1.3}
+.chp-type{font-size:10px;color:var(--gold2);margin-bottom:6px}
+.chp-stats{display:flex;gap:10px;font-family:'Cinzel',serif;font-size:11px;color:#fff}
+.chp-stat-lbl{font-size:8px;color:var(--text2);display:block}
+.chp-stat-val{font-size:14px;color:#f0e050}
+.chp-stars{color:var(--gold2);font-size:10px;letter-spacing:-1px;margin-bottom:3px}
+.chp-effect{font-size:10px;color:rgba(220,210,190,.8);line-height:1.55;background:rgba(0,0,0,.35);border-radius:6px;padding:8px 9px;border:1px solid rgba(255,255,255,.05);max-height:90px;overflow-y:auto}
+.chp-effect::-webkit-scrollbar{width:3px}
+.chp-effect::-webkit-scrollbar-thumb{background:rgba(180,160,255,.2);border-radius:2px}
+.chp-rank{position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header class="app-header">
+  <div class="app-logo" style="cursor:pointer" onclick="showSec('home')">MyCard Duel</div>
+  <nav class="nav-tabs">
+    <button class="nav-tab" data-sec="home" onclick="showSec('home')">🏠 ホーム</button>
+    <button class="nav-tab" data-sec="creator" onclick="showSec('creator')">✦ カード作成</button>
+    <button class="nav-tab" data-sec="mycards" onclick="showSec('mycards')">🃏 マイカード</button>
+    <button class="nav-tab" data-sec="deckbuilder" onclick="showSec('deckbuilder')">⚔ デッキ構築</button>
+    <button class="nav-tab" data-sec="mydecks" onclick="showSec('mydecks')">📚 マイデッキ</button>
+    <button class="nav-tab" data-sec="duel" onclick="showSec('duel')">🎮 対戦</button>
+  </nav>
+</header>
+
+<main class="main-content">
+
+<!-- ===== HOME ===== -->
+<section id="sec-home" class="section active">
+  <div class="home-screen">
+    <div class="home-hero">
+      <div class="home-logo">MyCard Duel</div>
+      <div class="home-sub">オリジナルカードでデュエルしよう</div>
+      <div class="home-stats">
+        <div class="hstat">
+          <div class="hstat-val" id="home-card-cnt">0</div>
+          <div class="hstat-lbl">カード</div>
+        </div>
+        <div class="hstat">
+          <div class="hstat-val" id="home-deck-cnt">0</div>
+          <div class="hstat-lbl">デッキ</div>
+        </div>
+      </div>
+    </div>
+    <div class="home-nav">
+      <div class="home-tile ht-create" onclick="showSec('creator')">
+        <span class="ht-icon">✦</span>
+        <span class="ht-label">カード作成</span>
+        <span class="ht-desc">オリジナルカードを<br>デザインしよう</span>
+      </div>
+      <div class="home-tile ht-cards" onclick="showSec('mycards')">
+        <span class="ht-icon">🃏</span>
+        <span class="ht-label">マイカード</span>
+        <span class="ht-desc">作ったカードを<br>管理・編集する</span>
+      </div>
+      <div class="home-tile ht-deck" onclick="showSec('deckbuilder')">
+        <span class="ht-icon">⚔</span>
+        <span class="ht-label">デッキ構築</span>
+        <span class="ht-desc">デッキを組んで<br>戦略を練ろう</span>
+      </div>
+      <div class="home-tile ht-duel" onclick="showSec('duel')">
+        <span class="ht-icon">🎮</span>
+        <span class="ht-label">対 戦</span>
+        <span class="ht-desc">デュエルを<br>始めよう！</span>
+      </div>
+    </div>
+    <!-- Recent cards preview -->
+    <div style="padding:0 20px 32px;max-width:640px;margin:0 auto;width:100%">
+      <div style="font-family:'Cinzel',serif;font-size:12px;color:var(--text2);margin-bottom:10px;letter-spacing:1px">最近作ったカード</div>
+      <div id="home-recent-cards" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CARD CREATOR ===== -->
+<section id="sec-creator" class="section">
+  <h1 class="section-title">✦ カード作成</h1>
+  <div class="creator-layout">
+    <div class="creator-preview-panel">
+      <div class="preview-label">プレビュー</div>
+      <div id="card-preview"></div>
+      <div class="btn-group" style="justify-content:center">
+        <button class="btn btn-primary btn-sm" onclick="saveCard()">💾 保存</button>
+        <button class="btn btn-outline btn-sm" onclick="resetCreator()">↺ リセット</button>
+      </div>
+    </div>
+    <div>
+      <!-- Rank selector -->
+      <div style="margin-bottom:14px">
+        <div class="form-label" style="margin-bottom:6px">カードランク <span style="font-size:9px;color:var(--text2);font-weight:400;text-transform:none;letter-spacing:0">（制作ポイント上限）</span></div>
+        <div class="rank-selector">
+          <button class="rank-btn active rn" onclick="setRank('normal',this)"><span class="ri">⬜</span><span class="rl">ノーマル</span><span class="rp">上限 10pt</span></button>
+          <button class="rank-btn rr" onclick="setRank('rare',this)"><span class="ri">🔵</span><span class="rl">レア</span><span class="rp">上限 13pt</span></button>
+          <button class="rank-btn rsr" onclick="setRank('superrare',this)"><span class="ri">🟣</span><span class="rl">スーパーレア</span><span class="rp">上限 16pt</span></button>
+          <button class="rank-btn rlg" onclick="setRank('legend',this)"><span class="ri">⭐</span><span class="rl">レジェンド</span><span class="rp">上限 20pt</span></button>
+        </div>
+      </div>
+      <!-- Cost meter -->
+      <div class="cost-meter-wrap" id="cost-meter">
+        <div class="cost-meter-label"><span>制作コスト</span><span><span class="cost-meter-val ok" id="cost-val">0</span> / <span id="cost-limit">10</span> pt</span></div>
+        <div class="cost-bar-track"><div class="cost-bar-fill" id="cost-bar" style="width:0%;background:#4ae878"></div></div>
+        <div class="cost-breakdown" id="cost-breakdown"></div>
+      </div>
+      <!-- Card Type -->
+      <div style="margin-bottom:14px">
+        <div class="form-label" style="margin-bottom:6px">カード種別</div>
+        <div class="type-selector">
+          <button class="type-btn active monster" onclick="setType('monster')"><span class="ti">⚔️</span><span class="tn">モンスター</span></button>
+          <button class="type-btn magic" onclick="setType('magic')"><span class="ti">✨</span><span class="tn">魔法</span></button>
+          <button class="type-btn trap" onclick="setType('trap')"><span class="ti">🕸️</span><span class="tn">罠</span></button>
+        </div>
+        <!-- Subtype -->
+        <div id="subtype-area" class="hidden">
+          <div class="form-label" style="margin-bottom:5px">カード種類</div>
+          <div class="subtype-selector" id="subtype-sel"></div>
+        </div>
+      </div>
+      <!-- Name -->
+      <div class="form-row cols-1"><div class="form-group">
+        <label class="form-label">カード名 <span class="req">*</span></label>
+        <input type="text" id="c-name" placeholder="カード名を入力" oninput="upPrev()" maxlength="30">
+      </div></div>
+      <!-- Monster fields -->
+      <div id="monster-fields">
+        <div class="form-row cols-2">
+          <div class="form-group"><label class="form-label">属性</label>
+            <select id="c-attr" onchange="upPrev()">
+              <option>光</option><option>闇</option><option>炎</option>
+              <option>水</option><option>風</option><option>地</option><option>神</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">種族</label>
+            <select id="c-race" onchange="upPrev()">
+              <option>戦士族</option><option>魔法使い族</option><option>ドラゴン族</option>
+              <option>機械族</option><option>悪魔族</option><option>天使族</option>
+              <option>獣族</option><option>獣戦士族</option><option>炎族</option>
+              <option>水族</option><option>鳥獣族</option><option>岩石族</option>
+              <option>植物族</option><option>昆虫族</option><option>爬虫類族</option>
+              <option>サイキック族</option><option>海竜族</option><option>幻竜族</option>
+              <option>サイバース族</option><option>雷族</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <label class="form-label">レベル</label>
+          <div class="level-selector" id="lv-sel"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label class="form-label">ATK</label>
+            <input type="number" id="c-atk" value="0" min="0" max="9999" oninput="upPrev()">
+          </div>
+          <div class="form-group"><label class="form-label">DEF</label>
+            <input type="number" id="c-def" value="0" min="0" max="9999" oninput="upPrev()">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:10px"><label class="form-label">モンスター種別</label>
+          <select id="c-msub" onchange="upPrev()">
+            <option value="effect">効果モンスター</option>
+            <option value="normal">通常モンスター</option>
+            <option value="ritual">儀式モンスター</option>
+            <option value="fusion">融合モンスター</option>
+            <option value="synchro">シンクロモンスター</option>
+            <option value="xyz">エクシーズモンスター</option>
+            <option value="link">リンクモンスター</option>
+          </select>
+        </div>
+      </div>
+      <!-- Image -->
+      <div class="form-group" style="margin-bottom:10px">
+        <label class="form-label">カード画像</label>
+        <div class="image-upload-area" id="upload-area">
+          <input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)">
+          <span style="font-size:24px;opacity:.5">🖼️</span>
+          <span class="upload-hint">タップして画像を選択</span>
+        </div>
+        <div class="default-icons" id="def-icons"></div>
+      </div>
+      <!-- Effect -->
+      <div class="form-group">
+        <label class="form-label">効果・テキスト</label>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:4px">カスタムテキスト <span style="opacity:.6">（カードに表示 / ゲーム効果なし）</span></div>
+        <textarea id="c-custom" placeholder="フレーバーテキストや説明文" rows="3" oninput="upPrev()"></textarea>
+        <hr class="divider">
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between">
+          <span>テンプレート効果 <span style="opacity:.6">（ゲームに反映）</span></span>
+          <span id="eff-count-badge" class="badge badge-m hidden"></span>
+        </div>
+        <div id="eff-blocks-list"></div>
+        <button class="add-eff-btn" onclick="openEffModal()">＋ テンプレート効果を追加</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MY CARDS ===== -->
+<section id="sec-mycards" class="section">
+  <h1 class="section-title">🃏 マイカード</h1>
+  <div class="cards-toolbar">
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="fCards('all')">すべて</button>
+      <button class="filter-tab" onclick="fCards('monster')">モンスター</button>
+      <button class="filter-tab" onclick="fCards('magic')">魔法</button>
+      <button class="filter-tab" onclick="fCards('trap')">罠</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px">
+      <select id="cards-sort" onchange="renderCardsGrid()" style="font-size:11px;padding:4px 7px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:var(--r)">
+        <option value="date">作成順</option>
+        <option value="name">名前順</option>
+        <option value="cost_h">コスト↑</option>
+        <option value="cost_l">コスト↓</option>
+        <option value="atk">ATK↑</option>
+      </select>
+      <button class="btn btn-outline btn-sm" onclick="importCards()">📥</button>
+      <button class="btn btn-outline btn-sm" onclick="exportAllCards()">📤</button>
+    </div>
+  </div>
+  <div style="margin-bottom:10px">
+    <input type="text" id="cards-search" placeholder="🔍 カード名で検索..." oninput="renderCardsGrid()" style="font-size:12px">
+  </div>
+  <div class="cards-grid" id="cards-grid"></div>
+</section>
+
+<!-- ===== DECK BUILDER ===== -->
+<section id="sec-deckbuilder" class="section">
+  <h1 class="section-title">⚔ デッキ構築</h1>
+  <div class="deck-builder-layout">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+        <div class="form-label">カードプール</div>
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="fPool('all')">全て</button>
+          <button class="filter-tab" onclick="fPool('monster')">M</button>
+          <button class="filter-tab" onclick="fPool('magic')">魔</button>
+          <button class="filter-tab" onclick="fPool('trap')">罠</button>
+        </div>
+      </div>
+      <div style="position:relative;margin-bottom:6px">
+        <input type="text" id="pool-search" placeholder="🔍 カード名で検索..." oninput="renderPool()" style="padding-left:10px;font-size:12px">
+      </div>
+      <div class="card-pool-grid" id="card-pool-grid"></div>
+    </div>
+    <div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <input type="text" class="deck-name-input" id="deck-name-in" placeholder="デッキ名を入力">
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="deck-zone-label">
+          <span>メインデッキ</span>
+          <span id="main-count" class="count-badge">0/20〜30</span>
+        </div>
+        <div class="deck-slots" id="main-slots"></div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div class="deck-zone-label">
+          <span>エクストラデッキ</span>
+          <span id="extra-count" class="count-badge">0/15</span>
+        </div>
+        <div class="deck-slots" id="extra-slots" style="min-height:48px"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <div id="deck-cost-bar-area" class="hidden" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;margin-bottom:2px"></div>
+        <button class="btn btn-primary btn-full" onclick="saveDeck()">💾 デッキを保存</button>
+        <button class="btn btn-outline btn-full" onclick="clearDeck()">✕ クリア</button>
+        <button class="btn btn-outline btn-full" onclick="exportDeckJSON()">📤 JSONエクスポート</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MY DECKS ===== -->
+<section id="sec-mydecks" class="section">
+  <h1 class="section-title">📚 マイデッキ</h1>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:11px;color:var(--text2)">デッキ数: <span id="deck-count">0</span></div>
+    <div class="btn-group">
+      <button class="btn btn-outline btn-sm" onclick="tryRegenStarters()">🎴 スターターを再生成</button>
+      <button class="btn btn-outline btn-sm" onclick="importDeck()">📥 デッキインポート</button>
+    </div>
+  </div>
+  <div class="deck-list" id="deck-list"></div>
+</section>
+
+<!-- ===== DUEL ===== -->
+<section id="sec-duel" class="section">
+
+<!-- Setup -->
+<div id="duel-setup" style="padding:20px 16px;overflow-y:auto;flex:1">
+  <h1 class="section-title">🎮 対戦設定</h1>
+  <div style="max-width:620px;margin:0 auto;display:grid;gap:14px">
+    <!-- Mode tabs -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <button id="mode-local-btn" class="btn btn-primary" onclick="setDuelMode('local')" style="padding:12px;flex-direction:column;gap:3px;border-radius:var(--rl)">
+        <span style="font-size:18px">🖥️</span><span style="font-size:11px">ローカル対戦</span><span style="font-size:9px;opacity:.7">同じ画面で2人</span>
+      </button>
+      <button id="mode-online-btn" class="btn btn-outline" onclick="setDuelMode('online')" style="padding:12px;flex-direction:column;gap:3px;border-radius:var(--rl)">
+        <span style="font-size:18px">🌐</span><span style="font-size:11px">オンライン対戦</span><span style="font-size:9px;opacity:.7">Firebaseが必要</span>
+      </button>
+    </div>
+
+    <!-- LOCAL MODE -->
+    <div id="setup-local">
+      <!-- Duel Mode -->
+      <div style="margin-bottom:10px">
+        <div class="form-label" style="margin-bottom:6px">対戦モード</div>
+        <div class="duel-mode-sel">
+          <button class="dmode-btn active" id="dm-balanced" onclick="setLocalDuelMode('balanced')">
+            <span class="di">⚖️</span><span class="dl">バランスモード</span><span class="dd">コスト制限あり・公平な戦い</span>
+          </button>
+          <button class="dmode-btn" id="dm-free" onclick="setLocalDuelMode('free')">
+            <span class="di">🔥</span><span class="dl">フリーモード</span><span class="dd">制限なし・何でもあり</span>
+          </button>
+        </div>
+        <div id="balanced-info" style="background:var(--bg3);border:1px solid rgba(200,163,39,.2);border-radius:var(--r);padding:8px 10px;font-size:10px;color:var(--text2);line-height:1.6">
+          ⚖️ バランスモードでは、デッキの<strong style="color:var(--text)">総コスト上限 = 枚数×10</strong>。コストオーバーのカードを含むデッキは使用不可。
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:10px">
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold);margin-bottom:12px">▶ Player 1（先攻）</div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label class="form-label">プレイヤー名</label><input type="text" id="p1-name" value="Player 1" maxlength="12"></div>
+          <div class="form-group"><label class="form-label">使用デッキ</label><select id="p1-deck-sel"></select></div>
+        </div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:10px">
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:var(--gold);margin-bottom:12px">◀ Player 2（後攻）</div>
+        <div class="form-row cols-2">
+          <div class="form-group"><label class="form-label">プレイヤー名</label><input type="text" id="p2-name" value="Player 2" maxlength="12"></div>
+          <div class="form-group"><label class="form-label">使用デッキ</label><select id="p2-deck-sel"></select></div>
+        </div>
+      </div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--rl);padding:10px;font-size:11px;color:var(--text2);line-height:1.7;margin-bottom:10px">
+        <div style="color:var(--gold);font-weight:500;margin-bottom:3px">デュエルリンクス準拠ルール</div>
+        LP 4000 ／ デッキ20〜30枚 ／ モンスターゾーン3 ／ 魔法・罠ゾーン3 ／ 手札上限6枚<br>
+        Lv5-6→1体リリース ／ Lv7+→2体リリース ／ 先攻バトルなし
+      </div>
+      <button class="btn btn-primary btn-lg btn-full" onclick="startDuel()">⚔ デュエル開始！</button>
+    </div>
+
+    <!-- ONLINE MODE -->
+    <div id="setup-online" class="hidden">
+      <!-- Firebase config check -->
+      <div id="fb-not-configured" style="background:var(--bg2);border:1px solid rgba(200,163,39,.3);border-radius:var(--rl);padding:16px;margin-bottom:10px">
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:8px">⚠️ Firebase未設定</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.8;margin-bottom:12px">
+          Firebaseコンソールの設定ページに表示される <code style="background:var(--bg4);padding:1px 5px;border-radius:3px;color:var(--gold2)">firebaseConfig</code> の値を入力してください。
+        </div>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('fb-config-area').classList.toggle('hidden')" style="margin-bottom:8px">⚙ Firebase設定を入力</button>
+        <div id="fb-config-area" class="hidden" style="margin-top:4px;display:grid;gap:8px">
+          <div class="form-group">
+            <label class="form-label">API Key <span style="color:var(--red)">*</span></label>
+            <input type="text" id="fb-apikey" placeholder="AIzaSy...（apiKeyの値）">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Auth Domain</label>
+            <input type="text" id="fb-authdomain" placeholder="your-app.firebaseapp.com（authDomainの値）">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Database URL <span style="color:var(--red)">*</span></label>
+            <input type="text" id="fb-dburl" placeholder="https://your-app-default-rtdb.asia-southeast1.firebasedatabase.app">
+            <div style="font-size:10px;color:var(--text2);margin-top:3px">
+              💡 Firebaseコンソール →「Realtime Database」→ページ上部のURL<br>
+              ⚠️ <strong style="color:var(--text)">末尾に / やパスを付けないでください</strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Project ID <span style="color:var(--red)">*</span></label>
+            <input type="text" id="fb-projectid" placeholder="your-app（projectIdの値）">
+          </div>
+          <div style="background:var(--bg3);border-radius:var(--r);padding:9px;font-size:10px;color:var(--text2);line-height:1.7">
+            <div style="color:var(--gold2);font-weight:500;margin-bottom:3px">入力例（あなたの場合）</div>
+            API Key: AIzaSyAKmYaR4OuNezDz475Je...<br>
+            Auth Domain: my-card-duel.firebaseapp.com<br>
+            Database URL: https://my-card-duel-default-rtdb.asia-southeast1.firebasedatabase.app<br>
+            Project ID: my-card-duel
+          </div>
+          <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 設定を保存して接続</button>
+        </div>
+      </div>
+      <div id="fb-configured" class="hidden">
+        <!-- Online lobby -->
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:10px">
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:10px">あなたの情報</div>
+          <div class="form-row cols-2">
+            <div class="form-group"><label class="form-label">プレイヤー名</label><input type="text" id="online-name" value="Player" maxlength="12"></div>
+            <div class="form-group"><label class="form-label">使用デッキ</label><select id="online-deck-sel"></select></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+          <button class="btn btn-primary" style="padding:14px;flex-direction:column;gap:4px" onclick="createOnlineRoom()">
+            <span style="font-size:16px">🏠</span><span style="font-size:12px">ルームを作成</span>
+          </button>
+          <button class="btn btn-outline" style="padding:14px;flex-direction:column;gap:4px" onclick="document.getElementById('join-area').classList.toggle('hidden')">
+            <span style="font-size:16px">🚪</span><span style="font-size:12px">ルームに参加</span>
+          </button>
+        </div>
+        <div id="join-area" class="hidden" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:14px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:8px"><label class="form-label">ルームID</label>
+            <input type="text" id="room-id-in" placeholder="相手から受け取ったIDを入力" style="font-family:monospace;letter-spacing:2px" maxlength="6">
+          </div>
+          <button class="btn btn-primary btn-full" onclick="joinOnlineRoom()">参加する</button>
+        </div>
+        <!-- Room waiting screen -->
+        <div id="room-waiting" class="hidden" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px;text-align:center">
+          <div style="font-family:'Cinzel',serif;font-size:13px;color:var(--gold);margin-bottom:8px">🏠 ルーム待機中</div>
+          <div style="font-size:24px;font-family:monospace;letter-spacing:4px;color:var(--text);background:var(--bg3);padding:10px 20px;border-radius:var(--r);display:inline-block;margin-bottom:10px" id="room-id-disp">------</div>
+          <div style="font-size:11px;color:var(--text2);margin-bottom:12px">このIDを相手に教えてください</div>
+          <div id="waiting-status" style="font-size:12px;color:var(--text2)">⏳ 相手の参加を待っています...</div>
+          <button class="btn btn-danger btn-sm" style="margin-top:10px" onclick="cancelRoom()">✕ キャンセル</button>
+        </div>
+        <div id="fb-reset-btn" style="text-align:right">
+          <button class="btn btn-outline btn-sm" onclick="resetFirebaseConfig()">⚙ Firebase設定をリセット</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Duel Field -->
+<div id="duel-field" class="duel-field hidden">
+
+  <!-- P2 bar -->
+  <div class="player-bar">
+    <div>
+      <div class="player-name" id="p2-name-disp">Player 2</div>
+      <div class="player-stats">
+        <span>山:<span id="p2-dc">0</span></span>
+        <span>墓:<span id="p2-gc">0</span></span>
+        <span>除:<span id="p2-rmc-bar">0</span></span>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="lp-text">LP <span id="p2-lp">4000</span></div>
+      <div class="lp-bar-wrap"><div class="lp-bar-track"><div class="lp-bar-fill p2" id="p2-lpb" style="width:100%"></div></div></div>
+    </div>
+  </div>
+
+  <!-- P2 hand (small face-down backs) -->
+  <div class="p2-hand-backs" id="p2-hand"></div>
+
+  <!-- Play Mat -->
+  <div class="field-mat">
+    <!-- P2 S/T row -->
+    <div class="field-row" style="margin-bottom:4px">
+      <div class="field-side">
+        <div class="small-zone" onclick="viewGraveModal(1,'extra')" title="エクストラ">EX<span class="sz-cnt" id="p2-exc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(1,'removed')" title="除外">除<span class="sz-cnt" id="p2-rmc">0</span></div>
+      </div>
+      <div style="display:flex;gap:6px" id="p2-st"></div>
+      <div class="field-side">
+        <div class="small-zone" style="cursor:default" title="デッキ">DECK<span class="sz-cnt" id="p2-dkc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(1,'grave')" title="墓地">GY<span class="sz-cnt" id="p2-gyc">0</span></div>
+      </div>
+    </div>
+    <!-- P2 Monster row -->
+    <div class="field-row" style="margin-bottom:3px">
+      <div style="width:60px"></div>
+      <div style="display:flex;gap:6px" id="p2-mn"></div>
+      <div style="width:60px"></div>
+    </div>
+
+    <!-- Phase bar (center crossing) -->
+    <div class="phase-bar">
+      <div class="phase-steps" id="phase-steps"></div>
+      <span class="turn-indicator" id="turn-ind">P1のターン</span>
+      <button class="phase-btn" id="phase-btn" onclick="advancePhase()">▶ 次へ</button>
+    </div>
+
+    <!-- P1 Monster row -->
+    <div class="field-row" style="margin-top:3px">
+      <div style="width:60px"></div>
+      <div style="display:flex;gap:6px" id="p1-mn"></div>
+      <div style="width:60px"></div>
+    </div>
+    <!-- P1 S/T row -->
+    <div class="field-row" style="margin-top:4px">
+      <div class="field-side">
+        <div class="small-zone" onclick="viewGraveModal(0,'extra')" title="エクストラ">EX<span class="sz-cnt" id="p1-exc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(0,'removed')" title="除外">除<span class="sz-cnt" id="p1-rmc">0</span></div>
+      </div>
+      <div style="display:flex;gap:6px" id="p1-st"></div>
+      <div class="field-side">
+        <div class="small-zone" style="cursor:default" title="デッキ">DECK<span class="sz-cnt" id="p1-dkc">0</span></div>
+        <div class="small-zone" onclick="viewGraveModal(0,'grave')" title="墓地">GY<span class="sz-cnt" id="p1-gyc">0</span></div>
+      </div>
+    </div>
+  </div><!-- /field-mat -->
+
+  <!-- Status banner -->
+  <div id="d-status" class="status-banner hidden"></div>
+
+  <!-- P1 hand -->
+  <div class="hand-area" id="p1-hand"></div>
+
+  <!-- P1 bar -->
+  <div class="player-bar" style="border-top:1px solid rgba(200,160,60,.2);border-bottom:none">
+    <div>
+      <div class="player-name" id="p1-name-disp">Player 1</div>
+      <div class="player-stats">
+        <span>手札:<span id="p1-hc">0</span></span>
+        <span>山:<span id="p1-dc">0</span></span>
+        <span>墓:<span id="p1-gc">0</span></span>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <div class="lp-text">LP <span id="p1-lp">4000</span></div>
+      <div class="lp-bar-wrap"><div class="lp-bar-track"><div class="lp-bar-fill p1" id="p1-lpb" style="width:100%"></div></div></div>
+    </div>
+  </div>
+
+  <!-- Log + surrender -->
+  <div style="display:flex;align-items:stretch;flex-shrink:0">
+    <div class="duel-log" id="duel-log" style="flex:1"></div>
+    <div style="display:flex;flex-direction:column;justify-content:center;padding:4px 6px;background:rgba(0,0,0,.65);border-top:1px solid rgba(200,160,60,.15);gap:4px;flex-shrink:0">
+      <button onclick="doSurrender()" style="background:rgba(192,57,43,.18);border:1px solid rgba(192,57,43,.4);color:#e84a3a;border-radius:5px;font-size:9px;padding:4px 7px;cursor:pointer;white-space:nowrap;font-family:'Cinzel',serif">降参</button>
+    </div>
+  </div>
+
+</div><!-- /duel-field -->
+
+<!-- Grave / Zone Viewer Modal -->
+<div class="modal-backdrop" id="grave-viewer-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-title" id="grave-viewer-title">墓地</div>
+    <div id="grave-viewer-content" style="max-height:60vh;overflow-y:auto"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('grave-viewer-modal').classList.remove('open')">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- LP Flash Overlay -->
+<div id="lp-flash" style="position:fixed;inset:0;z-index:800;pointer-events:none;opacity:0;transition:opacity .15s"></div>
+
+<!-- Card Hover Popup -->
+<div id="card-hover-popup">
+  <span class="chp-rank" id="chp-rank"></span>
+  <div class="chp-top">
+    <div class="chp-img" id="chp-img"></div>
+    <div class="chp-info">
+      <div class="chp-stars" id="chp-stars"></div>
+      <div class="chp-name" id="chp-name"></div>
+      <div class="chp-type" id="chp-type"></div>
+      <div style="display:flex;gap:12px" id="chp-stats-row"></div>
+    </div>
+  </div>
+  <div class="chp-effect" id="chp-effect"></div>
+</div>
+
+<!-- Action Menu -->
+<div class="action-menu hidden" id="action-menu"></div>
+
+<!-- Duel End Screen -->
+<div class="duel-end-screen hidden" id="duel-end">
+  <div class="duel-end-title">⚔ DUEL END</div>
+  <div class="duel-end-winner" id="duel-end-txt"></div>
+  <div id="duel-end-stats" style="background:rgba(255,255,255,.05);border:1px solid rgba(200,160,60,.2);border-radius:12px;padding:14px 24px;min-width:260px;font-size:12px;line-height:1.9;color:rgba(220,190,120,.8);margin-bottom:4px"></div>
+  <div style="display:flex;gap:12px">
+    <button class="btn btn-primary btn-lg" onclick="exitDuel()">もう一度</button>
+    <button class="btn btn-outline" onclick="exitDuel();showSec('mydecks')">デッキ変更</button>
+  </div>
+</div>
+
+</section>
+
+</main>
+
+<!-- Mobile Nav -->
+<nav class="mobile-nav" style="grid-template-columns:repeat(6,1fr)">
+  <button class="mn-item" data-sec="home" onclick="showSec('home')"><span class="ni">🏠</span><span class="nl">ホーム</span></button>
+  <button class="mn-item" data-sec="creator" onclick="showSec('creator')"><span class="ni">✦</span><span class="nl">作成</span></button>
+  <button class="mn-item" data-sec="mycards" onclick="showSec('mycards')"><span class="ni">🃏</span><span class="nl">カード</span></button>
+  <button class="mn-item" data-sec="deckbuilder" onclick="showSec('deckbuilder')"><span class="ni">⚔</span><span class="nl">デッキ</span></button>
+  <button class="mn-item" data-sec="mydecks" onclick="showSec('mydecks')"><span class="ni">📚</span><span class="nl">保存</span></button>
+  <button class="mn-item" data-sec="duel" onclick="showSec('duel')"><span class="ni">🎮</span><span class="nl">対戦</span></button>
+</nav>
+
+<!-- Effect Modal -->
+<div class="modal-backdrop" id="eff-modal">
+  <div class="modal">
+    <div class="modal-title">テンプレート効果を追加</div>
+    <div class="form-row cols-1" style="margin-bottom:10px">
+      <div class="form-group"><label class="form-label">発動タイミング</label>
+        <select id="em-timing" onchange="upEffPrev()">
+          <option value="main">自分のメインフェイズ</option>
+          <option value="freechain">フリーチェーン（相手ターンも可）</option>
+          <option value="summon">召喚・特殊召喚成功時</option>
+          <option value="destroy">このカードが破壊された時</option>
+          <option value="attack">攻撃宣言時（ダメージ計算前）</option>
+          <option value="opponent_activate">相手がカードを発動した時</option>
+          <option value="standby">スタンバイフェイズ</option>
+          <option value="endphase">エンドフェイズ</option>
+          <option value="always">常時適用</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row cols-1" style="margin-bottom:10px">
+      <div class="form-group"><label class="form-label">発動コスト</label>
+        <select id="em-cost" onchange="upEffPrev()">
+          <option value="none">なし</option>
+          <option value="hand1">手札を1枚捨てる</option>
+          <option value="hand2">手札を2枚捨てる</option>
+          <option value="lp500">LP500払う</option>
+          <option value="lp1000">LP1000払う</option>
+          <option value="lp2000">LP2000払う</option>
+          <option value="destroy_own">自分フィールドのカード1枚破壊</option>
+          <option value="tribute">このカードをリリース</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row cols-1" style="margin-bottom:10px">
+      <div class="form-group"><label class="form-label">効果の種類</label>
+        <select id="em-type" onchange="upEffParams();upEffPrev()">
+          <option value="destroy_1">【破壊】モンスター1体を破壊</option>
+          <option value="destroy_spell">【破壊】魔法・罠を破壊</option>
+          <option value="destroy_all">【破壊】フィールド一掃</option>
+          <option value="draw">【ドロー】カードをドロー</option>
+          <option value="atk_up">【強化】ATKアップ</option>
+          <option value="atk_down">【弱体化】ATKダウン</option>
+          <option value="def_up">【強化】DEFアップ</option>
+          <option value="lp_heal">【LP】LP回復</option>
+          <option value="lp_damage">【LP】相手にダメージ</option>
+          <option value="special_summon">【召喚】特殊召喚</option>
+          <option value="negate_effect">【無効】効果を無効・破壊</option>
+          <option value="negate_attack">【無効】攻撃を無効</option>
+          <option value="search">【サーチ】デッキからサーチ</option>
+          <option value="banish">【除外】カードを除外</option>
+          <option value="bounce">【バウンス】手札に戻す</option>
+          <option value="graveyard">【墓地】墓地から回収</option>
+          <option value="token">【トークン】トークン召喚</option>
+          <option value="buff_all">【全体強化】全モンスターATKアップ</option>
+        </select>
+      </div>
+    </div>
+    <div id="em-params-area"></div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:9px;margin-bottom:4px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:3px">生成される効果文：</div>
+      <div id="em-prev-text" style="font-size:12px;color:var(--text);font-style:italic;line-height:1.5"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeEffModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="addEffBlock()">追加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Card Detail Modal -->
+<div class="modal-backdrop" id="detail-modal">
+  <div class="modal">
+    <div class="modal-title" id="detail-title"></div>
+    <div id="detail-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeDetail()">閉じる</button>
+      <button class="btn btn-outline" onclick="shareURL()">🔗 URLシェア</button>
+      <button class="btn btn-outline" onclick="exportCard1JSON()">📤 JSON</button>
+      <button class="btn btn-outline" onclick="addDetailCardToDeck()">＋ デッキへ</button>
+      <button class="btn btn-primary" onclick="editFromDetail()">✏️ 編集</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-backdrop" id="share-modal">
+  <div class="modal">
+    <div class="modal-title">URLシェア</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:10px">※ 画像はURLに含まれません（テキスト情報のみ）</div>
+    <div class="form-group"><input type="text" id="share-url-in" readonly onclick="this.select()" style="font-size:11px;word-break:break-all"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('share-modal').classList.remove('open')">閉じる</button>
+      <button class="btn btn-primary" onclick="copyURL()">📋 コピー</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Modal -->
+<div class="modal-backdrop" id="import-modal">
+  <div class="modal">
+    <div class="modal-title" id="import-title">JSONインポート</div>
+    <div class="form-group" style="margin-bottom:12px">
+      <label class="form-label">JSONを貼り付け</label>
+      <textarea id="import-json-in" rows="8" placeholder='{"id":"...","name":"..."} または [...] 形式'></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeImport()">キャンセル</button>
+      <button class="btn btn-primary" onclick="doImport()">インポート</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+</div>
+
+<script>
+/* ===========================
+   STATE
+=========================== */
+const S = {
+  sec: 'creator',
+  editId: null,
+  detailId: null,
+  cards: [],
+  decks: [],
+  deck: { id: null, name: '', main: [], extra: [] },
+  cardFilter: 'all',
+  poolFilter: 'all',
+  importMode: 'card', // 'card' or 'deck'
+  c: {
+    type: 'monster',
+    subtype: 'effect',
+    name: '',
+    attr: '光',
+    race: '戦士族',
+    level: 4,
+    atk: 0,
+    def: 0,
+    image: null,
+    defIcon: '⚔️',
+    rank: 'normal',
+    custom: '',
+    effects: [],
+  }
+};
+
+const DEF_ICONS = ['⚔️','🐉','🧙','🏹','🛡️','⚡','🔥','💧','🌪️','🌑','⭐','💎','🦅','🐺','🌊','🗡️','🔮','💀','🌸','🏔️','🤖','👹','👁️','🦋','🐍'];
+
+/* ===========================
+   NAVIGATION
+=========================== */
+function showSec(name) {
+  S.sec = name;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  document.querySelectorAll('[data-sec]').forEach(b => {
+    b.classList.toggle('active', b.dataset.sec === name);
+  });
+  document.querySelector('.main-content').classList.toggle('duel-mode', name === 'duel');
+  if (name === 'home')      renderHome();
+  if (name === 'mycards')   renderCardsGrid();
+  if (name === 'deckbuilder') { renderPool(); renderDeckSlots(); }
+  if (name === 'mydecks')   renderDeckList();
+  if (name === 'duel')      onShowDuel();
+}
+
+/* ===========================
+   STORAGE
+=========================== */
+async function storeSave(key, val) {
+  try { await window.storage.set(key, JSON.stringify(val)); } catch(e) {}
+}
+async function storeGet(key) {
+  try { const r = await window.storage.get(key); return r ? JSON.parse(r.value) : null; }
+  catch(e) { return null; }
+}
+async function storeDel(key) {
+  try { await window.storage.delete(key); } catch(e) {}
+}
+async function storeList(prefix) {
+  try { const r = await window.storage.list(prefix); return r ? r.keys : []; }
+  catch(e) { return []; }
+}
+
+async function loadAll() {
+  const ckeys = await storeList('card:');
+  S.cards = [];
+  for (const k of ckeys) {
+    const c = await storeGet(k);
+    if (c) S.cards.push(c);
+  }
+  const dkeys = await storeList('deck:');
+  S.decks = [];
+  for (const k of dkeys) {
+    const d = await storeGet(k);
+    if (d) S.decks.push(d);
+  }
+}
+
+/* ===========================
+   CARD CREATOR
+=========================== */
+function setType(t) {
+  S.c.type = t;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.type-btn.${t}`).classList.add('active');
+  // monster subtype
+  const mf = document.getElementById('monster-fields');
+  const sa = document.getElementById('subtype-area');
+  if (t === 'monster') {
+    mf.classList.remove('hidden');
+    sa.classList.add('hidden');
+    S.c.subtype = S.c.subtype === 'effect' || ['effect','normal','ritual','fusion','synchro','xyz','link'].includes(S.c.subtype) ? S.c.subtype : 'effect';
+  } else {
+    mf.classList.add('hidden');
+    sa.classList.remove('hidden');
+    const opts = t === 'magic'
+      ? [['normal','通常魔法'],['continuous','永続魔法'],['quick','速攻魔法']]
+      : [['normal','通常罠'],['continuous','永続罠'],['counter','カウンター罠']];
+    const cur = opts[0][0];
+    S.c.subtype = cur;
+    renderSubtypes(opts, cur);
+  }
+  upPrev();
+}
+
+function renderSubtypes(opts, active) {
+  const sel = document.getElementById('subtype-sel');
+  sel.innerHTML = opts.map(([v,l]) =>
+    `<button class="subtype-btn${v===active?' active':''}" onclick="setSub('${v}',this)">${l}</button>`
+  ).join('');
+}
+
+function setSub(v, btn) {
+  S.c.subtype = v;
+  document.querySelectorAll('.subtype-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  upPrev();
+}
+
+function initLevelSelector() {
+  const el = document.getElementById('lv-sel');
+  el.innerHTML = Array.from({length:12},(_,i)=>{
+    const n = i+1;
+    return `<div class="lv-star${n===S.c.level?' active':''}" onclick="setLevel(${n})">★</div>`;
+  }).join('');
+}
+
+function setLevel(n) {
+  S.c.level = n;
+  document.querySelectorAll('.lv-star').forEach((s,i) => s.classList.toggle('active', i<n));
+  upPrev();
+}
+
+function initDefIcons() {
+  const el = document.getElementById('def-icons');
+  el.innerHTML = DEF_ICONS.map(ic =>
+    `<button class="di-btn${ic===S.c.defIcon?' sel':''}" onclick="setDefIcon('${ic}',this)">${ic}</button>`
+  ).join('');
+}
+
+function setDefIcon(ic, btn) {
+  S.c.defIcon = ic;
+  S.c.image = null;
+  const ua = document.getElementById('upload-area');
+  ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)">
+    <span style="font-size:28px;opacity:.6">${ic}</span>
+    <span class="upload-hint">画像を選択または変更</span>`;
+  ua.classList.remove('has-image');
+  document.querySelectorAll('.di-btn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel');
+  upPrev();
+}
+
+function handleImg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 400;
+      const r = Math.min(MAX/img.width, MAX/img.height, 1);
+      canvas.width = img.width * r;
+      canvas.height = img.height * r;
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      S.c.image = canvas.toDataURL('image/jpeg', 0.75);
+      const ua = document.getElementById('upload-area');
+      ua.classList.add('has-image');
+      ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)">
+        <img class="upload-preview" src="${S.c.image}">
+        <span class="upload-hint" style="font-size:10px">タップして変更</span>`;
+      upPrev();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ===========================
+   CARD VISUAL RENDER
+=========================== */
+function getCardClass(c) {
+  if (c.type === 'monster') {
+    const isExtra = ['fusion','synchro','xyz','link'].includes(c.subtype);
+    if (c.subtype === 'normal') return 'cv-normal';
+    return 'cv-monster';
+  }
+  if (c.type === 'magic') {
+    if (c.subtype === 'quick') return 'cv-magic cv-quick';
+    if (c.subtype === 'continuous') return 'cv-magic cv-continuous';
+    return 'cv-magic';
+  }
+  if (c.type === 'trap') {
+    if (c.subtype === 'counter') return 'cv-trap cv-counter';
+    if (c.subtype === 'continuous') return 'cv-trap cv-continuous';
+    return 'cv-trap';
+  }
+  return 'cv-monster';
+}
+
+function getTypeLine(c) {
+  if (c.type === 'monster') {
+    const subs = {effect:'効果',normal:'通常',ritual:'儀式',fusion:'融合',synchro:'シンクロ',xyz:'エクシーズ',link:'リンク'};
+    return `[${c.race}・${subs[c.subtype]||'効果'}]`;
+  }
+  if (c.type === 'magic') {
+    const subs = {normal:'魔法カード',continuous:'永続魔法',quick:'速攻魔法'};
+    return `[${subs[c.subtype]||'魔法カード'}]`;
+  }
+  if (c.type === 'trap') {
+    const subs = {normal:'罠カード',continuous:'永続罠',counter:'カウンター罠'};
+    return `[${subs[c.subtype]||'罠カード'}]`;
+  }
+  return '';
+}
+
+function getEffectText(c) {
+  const parts = [];
+  if (c.effects && c.effects.length) {
+    parts.push(...c.effects.map(e => e.text));
+  }
+  if (c.custom) parts.push(c.custom);
+  return parts.join(' ') || (c.type === 'monster' && c.subtype === 'normal' ? '通常モンスターとして、召喚できる。' : '効果テキストなし');
+}
+
+function renderCardHTML(c, w=220, h=320) {
+  const cls = getCardClass(c);
+  const effText = getEffectText(c);
+  const isMonster = c.type === 'monster';
+  const imgContent = c.image
+    ? `<img src="${c.image}" style="width:100%;height:100%;object-fit:cover">`
+    : `<span class="cv-def-icon">${c.defIcon||'⚔️'}</span>`;
+  const stars = isMonster ? '★'.repeat(Math.min(c.level||4,12)) : '';
+  const statsHTML = isMonster
+    ? `<div class="cv-stats"><span class="cv-stat">ATK/${c.atk||0}</span><span class="cv-stat">DEF/${c.def||0}</span></div>`
+    : `<div class="cv-no-stats"></div>`;
+  const attrHTML = isMonster ? `<div class="cv-attr a-${c.attr||'光'}">${c.attr||'光'}</div>` : '';
+  const rankBadge = c.rank && c.rank !== 'normal'
+    ? `<div class="rank-badge-card rb-${c.rank}">${{rare:'R',superrare:'SR',legend:'LG'}[c.rank]||''}</div>` : '';
+  const { total } = calcCardCost(c);
+  const costCls = total > RANK_LIMITS[c.rank||'normal'] ? 'cost-over' : total > RANK_LIMITS[c.rank||'normal']*0.8 ? 'cost-warn' : 'cost-ok';
+  const costBadge = `<div class="cost-badge-card ${costCls}">${total}pt</div>`;
+  return `<div class="card-visual ${cls}" style="width:${w}px;height:${h}px">
+    <div class="cv-inner">
+      ${rankBadge}${costBadge}
+      <div class="cv-name-bar">
+        <span class="cv-name">${esc(c.name)||'カード名'}</span>
+        <span class="cv-stars">${stars}</span>
+      </div>
+      ${attrHTML}
+      <div class="cv-img">${imgContent}</div>
+      <span class="cv-type-line">${getTypeLine(c)}</span>
+      <div class="cv-eff-box"><div class="cv-eff-text">${esc(effText)}</div></div>
+      ${statsHTML}
+    </div>
+  </div>`;
+}
+
+function scaledCard(c, dispW, dispH) {
+  const baseW = 220, baseH = 320;
+  const scale = Math.min(dispW/baseW, dispH/baseH);
+  return `<div class="card-scale-wrap" style="width:${dispW}px;height:${dispH}px">
+    <div style="transform:scale(${scale});transform-origin:top left;width:${baseW}px;height:${baseH}px">
+      ${renderCardHTML(c)}
+    </div>
+  </div>`;
+}
+
+function upPrev() {
+  const c = getCreatorCard();
+  document.getElementById('card-preview').innerHTML = renderCardHTML(c);
+  upCostMeter();
+}
+
+function getCreatorCard() {
+  return {
+    type: S.c.type,
+    subtype: S.c.subtype,
+    name: document.getElementById('c-name').value,
+    attr: document.getElementById('c-attr')?.value || S.c.attr,
+    race: document.getElementById('c-race')?.value || S.c.race,
+    level: S.c.level,
+    atk: parseInt(document.getElementById('c-atk')?.value)||0,
+    def: parseInt(document.getElementById('c-def')?.value)||0,
+    image: S.c.image,
+    defIcon: S.c.defIcon,
+    custom: document.getElementById('c-custom').value,
+    effects: S.c.effects,
+    rank: S.c.rank || 'normal',
+  };
+}
+
+/* ===========================
+   EFFECT MODAL
+=========================== */
+const EFFECT_DEFS = {
+  destroy_1: {
+    label:'カードを破壊',
+    params:[{id:'target',label:'対象',opts:[
+      ['opp_monster','相手フィールドのモンスター1体'],
+      ['opp_any','相手フィールドのカード1体'],
+      ['any','フィールドのカード1体']
+    ]}],
+    gen: p => `${({opp_monster:'相手フィールドのモンスター1体',opp_any:'相手フィールドのカード1枚',any:'フィールドのカード1枚'}[p.target]||'対象')}を選択して破壊する。`
+  },
+  destroy_spell: {
+    label:'魔法・罠を破壊',
+    params:[{id:'target',label:'対象',opts:[
+      ['opp_1','相手の魔法・罠1枚'],['opp_all','相手の魔法・罠すべて'],['any','任意の魔法・罠1枚']
+    ]}],
+    gen: p => `${({opp_1:'相手フィールドの魔法・罠カード1枚',opp_all:'相手フィールドの魔法・罠カードをすべて',any:'フィールドの魔法・罠カード1枚'}[p.target]||'対象')}を破壊する。`
+  },
+  destroy_all: {
+    label:'フィールド一掃',
+    params:[{id:'scope',label:'範囲',opts:[['all','全フィールド'],['opp','相手フィールドのみ'],['own','自分フィールドのみ']]}],
+    gen: p => `${({all:'フィールドのカードをすべて',opp:'相手フィールドのカードをすべて',own:'自分フィールドのカードをすべて'}[p.scope]||'フィールドのカードを')}破壊する。`
+  },
+  draw: {
+    label:'ドロー',
+    params:[{id:'n',label:'枚数',opts:[['1','1枚'],['2','2枚'],['3','3枚']]}],
+    gen: p => `カードを${p.n||1}枚ドローする。`
+  },
+  atk_up: {
+    label:'ATKアップ',
+    params:[
+      {id:'tgt',label:'対象',opts:[['self','このモンスター'],['one','自分のモンスター1体'],['all','自分の全モンスター']]},
+      {id:'amt',label:'数値',opts:[['300','+300'],['500','+500'],['800','+800'],['1000','+1000'],['1500','+1500'],['2000','+2000']]},
+      {id:'dur',label:'持続',opts:[['turn','ターン終了時まで'],['end','エンドフェイズまで'],['perm','永続的に']]},
+    ],
+    gen: p => `${({self:'このモンスター',one:'自分フィールドのモンスター1体',all:'自分フィールドのすべてのモンスター'}[p.tgt]||'モンスター')}のATKを${p.dur==='perm'?'永続的に':p.dur==='end'?'エンドフェイズまで':'ターン終了時まで'}${p.amt||500}アップする。`
+  },
+  atk_down: {
+    label:'ATKダウン',
+    params:[
+      {id:'tgt',label:'対象',opts:[['one','相手のモンスター1体'],['all','相手の全モンスター']]},
+      {id:'amt',label:'数値',opts:[['300','-300'],['500','-500'],['800','-800'],['1000','-1000'],['1500','-1500'],['2000','-2000']]},
+      {id:'dur',label:'持続',opts:[['turn','ターン終了時まで'],['perm','永続的に']]},
+    ],
+    gen: p => `${({one:'相手フィールドのモンスター1体',all:'相手フィールドのすべてのモンスター'}[p.tgt]||'対象')}のATKを${p.dur==='perm'?'永続的に':'ターン終了時まで'}${p.amt||500}ダウンする。`
+  },
+  def_up: {
+    label:'DEFアップ',
+    params:[
+      {id:'tgt',label:'対象',opts:[['self','このモンスター'],['one','自分のモンスター1体']]},
+      {id:'amt',label:'数値',opts:[['300','+300'],['500','+500'],['800','+800'],['1000','+1000'],['1500','+1500']]},
+      {id:'dur',label:'持続',opts:[['turn','ターン終了時まで'],['perm','永続的に']]},
+    ],
+    gen: p => `${p.tgt==='self'?'このモンスター':'自分フィールドのモンスター1体'}のDEFを${p.dur==='perm'?'永続的に':'ターン終了時まで'}${p.amt||500}アップする。`
+  },
+  lp_heal: {
+    label:'LP回復',
+    params:[{id:'amt',label:'回復量',opts:[['500','500'],['1000','1000'],['1500','1500'],['2000','2000'],['3000','3000']]}],
+    gen: p => `自分のLPを${p.amt||500}ポイント回復する。`
+  },
+  lp_damage: {
+    label:'相手LP直接ダメージ',
+    params:[{id:'amt',label:'ダメージ量',opts:[['300','300'],['500','500'],['800','800'],['1000','1000'],['1500','1500'],['2000','2000']]}],
+    gen: p => `相手に${p.amt||500}ポイントのダメージを与える。`
+  },
+  special_summon: {
+    label:'特殊召喚',
+    params:[
+      {id:'from',label:'場所',opts:[['hand','手札から'],['grave','墓地から'],['deck','デッキから']]},
+      {id:'cond',label:'条件',opts:[['none','なし'],['lv4','レベル4以下'],['lv5','レベル5以上']]},
+    ],
+    gen: p => `${({lv4:'レベル4以下の',lv5:'レベル5以上の',none:''}[p.cond]||'')}${p.from==='grave'?'墓地':p.from==='deck'?'デッキ':'手札'}のモンスター1体を特殊召喚する。`
+  },
+  negate_effect: {
+    label:'効果を無効にして破壊',
+    params:[{id:'tgt',label:'対象',opts:[['opponent','相手が発動したカード'],['any','フィールドのモンスター1体']]}],
+    gen: p => p.tgt==='opponent' ? '相手が発動したカードの効果を無効にし、そのカードを破壊する。' : 'フィールドのモンスター1体の効果を無効にし、破壊する。'
+  },
+  negate_attack: {
+    label:'攻撃を無効',
+    params:[{id:'scope',label:'範囲',opts:[['one','相手モンスター1体の攻撃'],['all','このターン相手の攻撃すべて']]}],
+    gen: p => p.scope==='all' ? 'このターン、相手は攻撃できない。' : '相手モンスター1体の攻撃を無効にする。'
+  },
+  search: {
+    label:'デッキからサーチ',
+    params:[{id:'what',label:'種別',opts:[['any','任意のカード1枚'],['monster','モンスター1体'],['spell','魔法カード1枚'],['trap','罠カード1枚']]}],
+    gen: p => `デッキから${({any:'カード1枚',monster:'モンスター1体',spell:'魔法カード1枚',trap:'罠カード1枚'}[p.what]||'カード')}をサーチし、手札に加える。`
+  },
+  banish: {
+    label:'除外',
+    params:[{id:'tgt',label:'対象',opts:[['opp_monster','相手モンスター1体'],['any','フィールドのカード1枚'],['grave','墓地のカード1枚']]}],
+    gen: p => `${({opp_monster:'相手フィールドのモンスター1体',any:'フィールドのカード1枚',grave:'いずれかの墓地のカード1枚'}[p.tgt]||'対象')}を除外する。`
+  },
+  bounce: {
+    label:'手札に戻す（バウンス）',
+    params:[{id:'tgt',label:'対象',opts:[['opp_1','相手のカード1枚'],['any','フィールドのカード1枚'],['opp_all','相手フィールドのカードすべて']]}],
+    gen: p => `${({opp_1:'相手フィールドのカード1枚',any:'フィールドのカード1枚',opp_all:'相手フィールドのカードをすべて'}[p.tgt]||'対象')}を手札に戻す。`
+  },
+  graveyard: {
+    label:'墓地から回収',
+    params:[{id:'tgt',label:'対象',opts:[['own_monster','自分墓地のモンスター1体'],['own_any','自分墓地のカード1枚'],['to_deck','デッキに戻す']]}],
+    gen: p => p.tgt==='to_deck' ? '自分の墓地のカード1枚をデッキに戻す。' : `${p.tgt==='own_any'?'自分の墓地のカード1枚':'自分の墓地のモンスター1体'}を手札に加える。`
+  },
+  token: {
+    label:'トークン召喚',
+    params:[
+      {id:'n',label:'数',opts:[['1','1体'],['2','2体']]},
+      {id:'atk',label:'ATK',opts:[['0','0'],['100','100'],['500','500'],['1000','1000']]},
+      {id:'def',label:'DEF',opts:[['0','0'],['100','100'],['500','500'],['1000','1000']]},
+    ],
+    gen: p => `ATK/${p.atk||0}・DEF/${p.def||0}のトークン${p.n||1}体を自分フィールドに特殊召喚する。`
+  },
+  buff_all: {
+    label:'全モンスターATKアップ',
+    params:[
+      {id:'amt',label:'数値',opts:[['200','+200'],['300','+300'],['500','+500'],['800','+800'],['1000','+1000']]},
+      {id:'dur',label:'持続',opts:[['turn','ターン終了時まで'],['perm','永続的に']]},
+    ],
+    gen: p => `自分フィールドのすべてのモンスターのATKを${p.dur==='perm'?'永続的に':'ターン終了時まで'}${p.amt||300}アップする。`
+  },
+};
+
+const TIMING_TEXT = {
+  main:'自分のメインフェイズに発動できる。',
+  freechain:'このカードはフリーチェーンで発動できる。',
+  summon:'このカードが召喚・特殊召喚に成功した時に発動できる。',
+  destroy:'このカードが破壊された場合に発動できる。',
+  attack:'このカードが攻撃する場合、ダメージ計算前に発動できる。',
+  opponent_activate:'相手がカードの効果を発動した時に発動できる。',
+  standby:'スタンバイフェイズに発動できる。',
+  endphase:'エンドフェイズに発動できる。',
+  always:'常に以下の効果を適用する。',
+};
+const COST_TEXT = {
+  none:'',hand1:'手札を1枚捨てて発動できる。',hand2:'手札を2枚捨てて発動できる。',
+  lp500:'LPを500払って発動できる。',lp1000:'LPを1000払って発動できる。',lp2000:'LPを2000払って発動できる。',
+  destroy_own:'自分フィールドのカード1枚を破壊して発動できる。',
+  tribute:'このカードをリリースして発動できる。',
+};
+
+function upEffParams() {
+  const type = document.getElementById('em-type').value;
+  const def = EFFECT_DEFS[type];
+  const area = document.getElementById('em-params-area');
+  if (!def) { area.innerHTML = ''; return; }
+  area.innerHTML = def.params.map(p =>
+    `<div class="form-row cols-1" style="margin-bottom:8px"><div class="form-group">
+      <label class="form-label">${p.label}</label>
+      <select id="em-p-${p.id}" onchange="upEffPrev()">
+        ${p.opts.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}
+      </select>
+    </div></div>`
+  ).join('');
+  upEffPrev();
+}
+
+function upEffPrev() {
+  const type = document.getElementById('em-type').value;
+  const def = EFFECT_DEFS[type];
+  if (!def) { document.getElementById('em-prev-text').textContent = ''; return; }
+  const p = {};
+  def.params.forEach(param => {
+    const el = document.getElementById('em-p-' + param.id);
+    if (el) p[param.id] = el.value;
+  });
+  const timing = TIMING_TEXT[document.getElementById('em-timing').value] || '';
+  const cost = COST_TEXT[document.getElementById('em-cost').value] || '';
+  const eff = def.gen(p);
+  document.getElementById('em-prev-text').textContent = timing + cost + eff;
+}
+
+function openEffModal() {
+  document.getElementById('eff-modal').classList.add('open');
+  upEffParams();
+}
+function closeEffModal() { document.getElementById('eff-modal').classList.remove('open'); }
+
+function addEffBlock() {
+  const type = document.getElementById('em-type').value;
+  const def = EFFECT_DEFS[type];
+  if (!def) return;
+  const p = {};
+  def.params.forEach(param => {
+    const el = document.getElementById('em-p-' + param.id);
+    if (el) p[param.id] = el.value;
+  });
+  const timing = document.getElementById('em-timing').value;
+  const cost = document.getElementById('em-cost').value;
+  const timingTxt = TIMING_TEXT[timing] || '';
+  const costTxt = COST_TEXT[cost] || '';
+  const effTxt = def.gen(p);
+  S.c.effects.push({
+    type, label: def.label, timing, cost, params: p,
+    text: timingTxt + costTxt + effTxt
+  });
+  closeEffModal();
+  renderEffBlocks();
+  upPrev();
+}
+
+function removeEff(i) {
+  S.c.effects.splice(i, 1);
+  renderEffBlocks();
+  upPrev();
+}
+
+function renderEffBlocks() {
+  const el = document.getElementById('eff-blocks-list');
+  const badge = document.getElementById('eff-count-badge');
+  if (!S.c.effects.length) {
+    el.innerHTML = '';
+    badge.classList.add('hidden');
+    return;
+  }
+  badge.textContent = `${S.c.effects.length}個の効果`;
+  badge.classList.remove('hidden');
+  el.innerHTML = S.c.effects.map((e,i) =>
+    `<div class="effect-block">
+      <div class="eff-block-head">
+        <span class="eff-block-type">${e.label}</span>
+        <button class="eff-del-btn" onclick="removeEff(${i})">✕</button>
+      </div>
+      <div class="eff-block-text">${esc(e.text)}</div>
+    </div>`
+  ).join('');
+}
+
+/* ===========================
+   SAVE / EDIT CARD
+=========================== */
+function saveCard() {
+  const c = getCreatorCard();
+  if (!c.name.trim()) { toast('カード名を入力してください', 'error'); return; }
+  const { total } = calcCardCost(c);
+  const limit = RANK_LIMITS[c.rank || 'normal'];
+  c.cost = total;
+  if (total > limit) {
+    if (!confirm(`コストが上限を超えています（${total}/${limit}pt）。\nこのカードはバランスモードでは使用できません。\n保存しますか？`)) return;
+  }
+  c.id = S.editId || genId();
+  c.createdAt = S.editId ? (S.cards.find(x=>x.id===S.editId)?.createdAt || Date.now()) : Date.now();
+  S.editId = null;
+  const idx = S.cards.findIndex(x => x.id === c.id);
+  if (idx >= 0) S.cards[idx] = c; else S.cards.push(c);
+  storeSave('card:' + c.id, c);
+  toast('カードを保存しました！', 'success');
+  resetCreator();
+  showSec('mycards');
+}
+
+function resetCreator() {
+  S.editId = null;
+  S.c = { type:'monster', subtype:'effect', name:'', attr:'光', race:'戦士族', level:4, atk:0, def:0, image:null, defIcon:'⚔️', custom:'', effects:[], rank:'normal' };
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-custom').value = '';
+  document.getElementById('c-atk').value = '0';
+  document.getElementById('c-def').value = '0';
+  document.getElementById('c-attr').value = '光';
+  document.getElementById('c-race').value = '戦士族';
+  document.getElementById('c-msub').value = 'effect';
+  const ua = document.getElementById('upload-area');
+  ua.className = 'image-upload-area';
+  ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)"><span style="font-size:24px;opacity:.5">🖼️</span><span class="upload-hint">タップして画像を選択</span>`;
+  document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('active'));
+  const defBtn = document.querySelector('.rank-btn.rn');
+  if (defBtn) defBtn.classList.add('active');
+  document.getElementById('monster-fields').classList.remove('hidden');
+  document.getElementById('subtype-area').classList.add('hidden');
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.type-btn.monster').classList.add('active');
+  renderEffBlocks();
+  initLevelSelector();
+  initDefIcons();
+  upPrev();
+}
+
+function editCard(id) {
+  const c = S.cards.find(x => x.id === id);
+  if (!c) return;
+  S.editId = id;
+  S.c = { ...c, effects: [...(c.effects||[])], rank: c.rank||'normal' };
+  setType(c.type);
+  document.getElementById('c-name').value = c.name || '';
+  document.getElementById('c-custom').value = c.custom || '';
+  if (c.type === 'monster') {
+    document.getElementById('c-atk').value = c.atk || 0;
+    document.getElementById('c-def').value = c.def || 0;
+    document.getElementById('c-attr').value = c.attr || '光';
+    document.getElementById('c-race').value = c.race || '戦士族';
+    document.getElementById('c-msub').value = c.subtype || 'effect';
+    setLevel(c.level || 4);
+  } else {
+    const subopts = c.type === 'magic'
+      ? [['normal','通常魔法'],['continuous','永続魔法'],['quick','速攻魔法']]
+      : [['normal','通常罠'],['continuous','永続罠'],['counter','カウンター罠']];
+    renderSubtypes(subopts, c.subtype || subopts[0][0]);
+    S.c.subtype = c.subtype || subopts[0][0];
+  }
+  // Restore rank UI
+  const rankMap = {normal:'rn', rare:'rr', superrare:'rsr', legend:'rlg'};
+  document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('active'));
+  const rankKey = c.rank || 'normal';
+  const targetBtn = document.querySelector(`.rank-btn.${rankMap[rankKey]}`);
+  if (targetBtn) targetBtn.classList.add('active');
+  if (c.image) {
+    const ua = document.getElementById('upload-area');
+    ua.classList.add('has-image');
+    ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)"><img class="upload-preview" src="${c.image}"><span class="upload-hint" style="font-size:10px">タップして変更</span>`;
+  }
+  renderEffBlocks();
+  upPrev();
+  closeDetail();
+  showSec('creator');
+}
+
+function deleteCard(id) {
+  if (!confirm('このカードを削除しますか？')) return;
+  S.cards = S.cards.filter(x => x.id !== id);
+  storeDel('card:' + id);
+  // remove from decks
+  S.decks.forEach(d => {
+    d.main = d.main.filter(x => x !== id);
+    d.extra = d.extra.filter(x => x !== id);
+    storeSave('deck:' + d.id, d);
+  });
+  toast('カードを削除しました', 'success');
+  renderCardsGrid();
+}
+
+/* ===========================
+   MY CARDS
+=========================== */
+function fCards(type) {
+  S.cardFilter = type;
+  document.querySelectorAll('#sec-mycards .filter-tab').forEach(b =>
+    b.classList.toggle('active', b.textContent.includes({all:'すべて',monster:'モンスター',magic:'魔法',trap:'罠'}[type]||type))
+  );
+  renderCardsGrid();
+}
+
+function renderCardsGrid() {
+  const el = document.getElementById('cards-grid');
+  const search = (document.getElementById('cards-search')?.value||'').toLowerCase();
+  const sortKey = document.getElementById('cards-sort')?.value || 'date';
+  let cards = S.cards.filter(c => {
+    if (S.cardFilter !== 'all' && c.type !== S.cardFilter) return false;
+    if (search && !c.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  // Sort
+  cards = [...cards].sort((a,b) => {
+    if (sortKey === 'name') return (a.name||'').localeCompare(b.name||'','ja');
+    if (sortKey === 'cost_h') return calcCardCost(a).total - calcCardCost(b).total;
+    if (sortKey === 'cost_l') return calcCardCost(b).total - calcCardCost(a).total;
+    if (sortKey === 'atk') return (b.atk||0) - (a.atk||0);
+    return (b.createdAt||0) - (a.createdAt||0); // date desc
+  });
+  if (!cards.length) {
+    el.innerHTML = `<div class="empty-state"><span class="empty-icon">🃏</span><div>${search?'「'+search+'」は見つかりません':'カードがまだありません'}</div>${!search?`<button class="btn btn-primary" style="margin-top:12px" onclick="showSec('creator')">カードを作成する</button>`:''}</div>`;
+    return;
+  }
+  el.innerHTML = cards.map(c => {
+    const dw = 115, dh = Math.round(dw * 320/220);
+    const thumbHTML = scaledCard(c, dw, dh);
+    const { total } = calcCardCost(c);
+    const limit = RANK_LIMITS[c.rank||'normal'];
+    const costCol = total > limit ? '#e84a3a' : total > limit*0.8 ? 'var(--gold2)' : 'var(--text2)';
+    return `<div class="card-thumb-wrap" onclick="showDetail('${c.id}')" onmouseenter="showHoverPopup(event,'${c.id}')" onmouseleave="hideHoverPopup()">
+      ${thumbHTML}
+      <div class="cta">
+        <button class="cta-btn" onclick="event.stopPropagation();editCard('${c.id}')">編集</button>
+        <button class="cta-btn danger" onclick="event.stopPropagation();deleteCard('${c.id}')">削除</button>
+      </div>
+      <div class="card-thumb-name">${esc(c.name)}</div>
+      <div style="text-align:center;font-size:9px;color:${costCol};margin-top:1px">${total}/${limit}pt</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===========================
+   CARD DETAIL
+=========================== */
+function showDetail(id) {
+  S.detailId = id;
+  const c = S.cards.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('detail-title').textContent = c.name;
+  const isM = c.type === 'monster';
+  const { total, breakdown } = calcCardCost(c);
+  const limit = RANK_LIMITS[c.rank||'normal'];
+  const costColor = total > limit ? '#e84a3a' : total > limit*0.8 ? 'var(--gold2)' : '#4ae878';
+  const rankLabel = RANK_LABELS[c.rank||'normal'] || 'ノーマル';
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-card-wrap">${renderCardHTML(c, 200, 290)}</div>
+    <div class="detail-fields">
+      <div class="df-item"><div class="df-label">種別</div><div class="df-val">${{monster:'モンスター',magic:'魔法',trap:'罠'}[c.type]}</div></div>
+      <div class="df-item"><div class="df-label">ランク</div><div class="df-val" style="color:var(--gold)">${rankLabel} (上限${limit}pt)</div></div>
+      ${isM ? `<div class="df-item"><div class="df-label">属性</div><div class="df-val">${c.attr}</div></div>` : ''}
+      ${isM ? `<div class="df-item"><div class="df-label">種族</div><div class="df-val">${c.race}</div></div>` : ''}
+      ${isM ? `<div class="df-item"><div class="df-label">レベル</div><div class="df-val">${c.level}</div></div>` : ''}
+      ${isM ? `<div class="df-item"><div class="df-label">ATK/DEF</div><div class="df-val">${c.atk}/${c.def}</div></div>` : ''}
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 10px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">
+        <span style="color:var(--text2)">制作コスト</span>
+        <span style="color:${costColor};font-weight:600">${total} / ${limit} pt</span>
+      </div>
+      <div style="height:6px;background:var(--bg4);border-radius:4px;overflow:hidden;margin-bottom:6px">
+        <div style="height:100%;width:${Math.min(100,(total/limit)*100)}%;background:${costColor};border-radius:4px;transition:width .3s"></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:3px">
+        ${breakdown.map(b=>{const s=b.cost>0?'+':'';const col=b.cost<0?'#4ae878':b.cost>2?'#e87040':'var(--text2)';return`<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:var(--bg4);color:${col};border:1px solid var(--border)">${esc(b.label)}: ${s}${b.cost}pt</span>`;}).join('')}
+      </div>
+    </div>
+    ${(c.effects||[]).length ? `<div style="font-size:11px;color:var(--text2);margin-bottom:4px">テンプレート効果 (${c.effects.length}個)</div>
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px;font-size:11px;color:var(--text);line-height:1.6">
+        ${c.effects.map(e => `<div>・${esc(e.text)}</div>`).join('')}
+      </div>` : ''}
+  `;
+  document.getElementById('detail-modal').classList.add('open');
+}
+function addDetailCardToDeck() {
+  const c = S.cards.find(x => x.id === S.detailId);
+  if (!c) return;
+  addToDeck(c.id);
+  closeDetail();
+  toast(`「${c.name}」をデッキに追加しました`, 'success');
+}
+
+function closeDetail() { document.getElementById('detail-modal').classList.remove('open'); }
+function editFromDetail() { editCard(S.detailId); }
+
+/* ===========================
+   SHARING
+=========================== */
+function shareURL() {
+  const c = S.cards.find(x => x.id === S.detailId);
+  if (!c) return;
+  const data = { ...c, image: null }; // strip image for URL
+  const json = JSON.stringify(data);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  const url = `${location.href.split('?')[0]}?card=${b64}`;
+  document.getElementById('share-url-in').value = url;
+  document.getElementById('share-modal').classList.add('open');
+}
+function copyURL() {
+  const el = document.getElementById('share-url-in');
+  el.select();
+  document.execCommand('copy');
+  toast('URLをコピーしました！', 'success');
+}
+function exportCard1JSON() {
+  const c = S.cards.find(x => x.id === S.detailId);
+  if (!c) return;
+  downloadJSON([c], `${c.name || 'card'}.json`);
+}
+function exportAllCards() {
+  if (!S.cards.length) { toast('カードがありません', 'error'); return; }
+  downloadJSON(S.cards, 'mycards.json');
+}
+function downloadJSON(data, filename) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  toast('ダウンロード開始！', 'success');
+}
+function importCards() {
+  S.importMode = 'card';
+  document.getElementById('import-title').textContent = 'カードインポート';
+  document.getElementById('import-json-in').value = '';
+  document.getElementById('import-modal').classList.add('open');
+}
+function importDeck() {
+  S.importMode = 'deck';
+  document.getElementById('import-title').textContent = 'デッキインポート';
+  document.getElementById('import-json-in').value = '';
+  document.getElementById('import-modal').classList.add('open');
+}
+function closeImport() { document.getElementById('import-modal').classList.remove('open'); }
+function doImport() {
+  const raw = document.getElementById('import-json-in').value.trim();
+  try {
+    let data = JSON.parse(raw);
+    if (S.importMode === 'card') {
+      if (!Array.isArray(data)) data = [data];
+      let count = 0;
+      data.forEach(c => {
+        if (!c.id || !c.name) { c.id = genId(); }
+        const exists = S.cards.findIndex(x => x.id === c.id);
+        if (exists >= 0) S.cards[exists] = c; else { S.cards.push(c); count++; }
+        storeSave('card:' + c.id, c);
+      });
+      toast(`${data.length}枚のカードをインポートしました`, 'success');
+      renderCardsGrid();
+    } else {
+      if (!Array.isArray(data)) data = [data];
+      data.forEach(d => {
+        if (!d.id) d.id = genId();
+        const exists = S.decks.findIndex(x => x.id === d.id);
+        if (exists >= 0) S.decks[exists] = d; else S.decks.push(d);
+        storeSave('deck:' + d.id, d);
+      });
+      toast(`${data.length}個のデッキをインポートしました`, 'success');
+      renderDeckList();
+    }
+    closeImport();
+  } catch(e) {
+    toast('JSONの形式が正しくありません', 'error');
+  }
+}
+
+/* ===========================
+   DECK BUILDER
+=========================== */
+function fPool(type) {
+  S.poolFilter = type;
+  document.querySelectorAll('#sec-deckbuilder .filter-tab').forEach(b =>
+    b.classList.toggle('active', b.textContent === ({all:'全て',monster:'M',magic:'魔',trap:'罠'}[type]||type))
+  );
+  renderPool();
+}
+
+function renderPool() {
+  const el = document.getElementById('card-pool-grid');
+  const search = (document.getElementById('pool-search')?.value||'').toLowerCase();
+  const cards = S.cards.filter(c => {
+    if (S.poolFilter !== 'all' && c.type !== S.poolFilter) return false;
+    if (search && !c.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+  if (!cards.length) {
+    el.innerHTML = `<div style="padding:20px;text-align:center;color:var(--text2);font-size:12px;grid-column:1/-1">${search ? '「'+search+'」は見つかりません' : 'カードがありません'}</div>`;
+    return;
+  }
+  el.innerHTML = cards.map(c => {
+    const dw = 74, dh = Math.round(dw*320/220);
+    const inMain = S.deck.main.filter(x=>x===c.id).length;
+    const inExtra = S.deck.extra.filter(x=>x===c.id).length;
+    const cnt = inMain + inExtra;
+    const { total } = calcCardCost(c);
+    const limit = RANK_LIMITS[c.rank||'normal'];
+    const costCol = total > limit ? '#e84a3a' : 'var(--text2)';
+    return `<div class="pool-card" onclick="addToDeck('${c.id}')" onmouseenter="showHoverPopup(event,'${c.id}')" onmouseleave="hideHoverPopup()" title="${esc(c.name)} (${total}pt)">
+      ${scaledCard(c, dw, dh)}
+      <div class="add-ov">＋</div>
+      ${cnt ? `<div class="in-deck-badge">${cnt}</div>` : ''}
+      <div style="font-size:8px;text-align:center;color:${costCol};margin-top:1px">${total}pt</div>
+    </div>`;
+  }).join('');
+}
+
+function isExtraCard(c) {
+  return c && c.type === 'monster' && ['fusion','synchro','xyz','link'].includes(c.subtype);
+}
+
+function addToDeck(id) {
+  const c = S.cards.find(x => x.id === id);
+  if (!c) return;
+  if (isExtraCard(c)) {
+    if (S.deck.extra.length >= 15) { toast('エクストラデッキは最大15枚です', 'error'); return; }
+    const cnt = S.deck.extra.filter(x=>x===id).length;
+    if (cnt >= 3) { toast('同名カードは3枚まで', 'error'); return; }
+    S.deck.extra.push(id);
+  } else {
+    if (S.deck.main.length >= 30) { toast('メインデッキは最大30枚です', 'error'); return; }
+    const cnt = S.deck.main.filter(x=>x===id).length;
+    if (cnt >= 3) { toast('同名カードは3枚まで', 'error'); return; }
+    S.deck.main.push(id);
+  }
+  renderDeckSlots();
+  renderPool();
+}
+
+function removeFromMain(i) { S.deck.main.splice(i, 1); renderDeckSlots(); renderPool(); }
+function removeFromExtra(i) { S.deck.extra.splice(i, 1); renderDeckSlots(); renderPool(); }
+
+function renderDeckSlots() {
+  const mainEl = document.getElementById('main-slots');
+  const extraEl = document.getElementById('extra-slots');
+  mainEl.innerHTML = S.deck.main.map((id,i) => {
+    const c = S.cards.find(x=>x.id===id);
+    return `<div class="deck-card-slot" onclick="removeFromMain(${i})">
+      ${c ? scaledCard(c,52,76) : '<div style="width:52px;height:76px;background:var(--bg4)"></div>'}
+      <div class="rm-ov">✕</div>
+    </div>`;
+  }).join('') || `<div style="color:var(--text3);font-size:11px;padding:8px">カードをプールから追加</div>`;
+  extraEl.innerHTML = S.deck.extra.map((id,i) => {
+    const c = S.cards.find(x=>x.id===id);
+    return `<div class="deck-card-slot" onclick="removeFromExtra(${i})">
+      ${c ? scaledCard(c,52,76) : '<div style="width:52px;height:76px;background:var(--bg4)"></div>'}
+      <div class="rm-ov">✕</div>
+    </div>`;
+  }).join('') || `<div style="color:var(--text3);font-size:11px;padding:8px">融合・シンクロ・エクシーズ・リンク</div>`;
+  // Update counts
+  const mc = S.deck.main.length;
+  const ec = S.deck.extra.length;
+  const mainBadge = document.getElementById('main-count');
+  mainBadge.textContent = `${mc}/20〜30`;
+  mainBadge.className = 'count-badge' + (mc>=20&&mc<=30?' ok':mc>30?' bad':'');
+  const extraBadge = document.getElementById('extra-count');
+  extraBadge.textContent = `${ec}/15`;
+  extraBadge.className = 'count-badge' + (ec>15?' bad':ec>0?' ok':'');
+  // Cost bar
+  const deckCostEl = document.getElementById('deck-cost-bar-area');
+  if (deckCostEl && mc > 0) {
+    const usedCost = S.deck.main.reduce((s,id)=>{const c=S.cards.find(x=>x.id===id);return s+(c?calcCardCost(c).total:0);},0);
+    const limitCost = mc * 10;
+    const pct = Math.min(100, (usedCost / limitCost) * 100);
+    const col = usedCost > limitCost ? '#e84a3a' : usedCost > limitCost*0.85 ? 'var(--gold2)' : '#4ae878';
+    deckCostEl.innerHTML = `
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:3px">
+        <span>デッキコスト合計</span>
+        <span style="color:${col};font-weight:600">${usedCost} / ${limitCost} pt ${usedCost>limitCost?'⚠️バランスモード不可':''}</span>
+      </div>
+      <div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:${col};border-radius:3px;transition:width .3s"></div>
+      </div>`;
+    deckCostEl.classList.remove('hidden');
+  } else if (deckCostEl) {
+    deckCostEl.classList.add('hidden');
+  }
+}
+
+function saveDeck() {
+  const name = document.getElementById('deck-name-in').value.trim();
+  if (!name) { toast('デッキ名を入力してください', 'error'); return; }
+  if (S.deck.main.length < 20) { toast(`メインデッキは最低20枚必要です（現在${S.deck.main.length}枚）`, 'error'); return; }
+  const d = {
+    id: S.deck.id || genId(),
+    name,
+    main: [...S.deck.main],
+    extra: [...S.deck.extra],
+    savedAt: Date.now(),
+  };
+  S.deck.id = d.id;
+  const idx = S.decks.findIndex(x => x.id === d.id);
+  if (idx >= 0) S.decks[idx] = d; else S.decks.push(d);
+  storeSave('deck:' + d.id, d);
+  toast('デッキを保存しました！', 'success');
+}
+
+function clearDeck() {
+  if (!confirm('デッキをクリアしますか？')) return;
+  S.deck = { id: null, name: '', main: [], extra: [] };
+  document.getElementById('deck-name-in').value = '';
+  renderDeckSlots();
+  renderPool();
+}
+
+function exportDeckJSON() {
+  const name = document.getElementById('deck-name-in').value || 'deck';
+  const d = { id: S.deck.id || genId(), name, main: S.deck.main, extra: S.deck.extra };
+  downloadJSON(d, `${name}.json`);
+}
+
+/* ===========================
+   MY DECKS
+=========================== */
+function renderDeckList() {
+  const el = document.getElementById('deck-list');
+  const dc = document.getElementById('deck-count');
+  if(dc) dc.textContent = S.decks.length;
+  if (!S.decks.length) {
+    el.innerHTML = `<div class="empty-state"><span class="empty-icon">📚</span><div>デッキがまだありません</div><button class="btn btn-primary" style="margin-top:12px" onclick="showSec('deckbuilder')">デッキを作成する</button></div>`;
+    return;
+  }
+  el.innerHTML = S.decks.map(d => {
+    const types = [...(d.main||[]), ...(d.extra||[])].slice(0,3).map(id => {
+      const c = S.cards.find(x=>x.id===id);
+      return c ? `style="background:var(--${c.type==='magic'?'sf':c.type==='trap'?'tf':'mf'})"` : '';
+    });
+    while(types.length<3) types.push('');
+    const mCount = (d.main||[]).length, eCount = (d.extra||[]).length;
+    const usedCost = calcDeckCost(d);
+    const limitCost = mCount * 10;
+    const costOver = usedCost > limitCost;
+    const costCol = getCostColor(d);
+    const starterBadge = d.isStarter ? `<span class="starter-badge">🎴 スターター</span>` : '';
+    return `<div class="deck-list-item">
+      <div class="deck-mini">
+        <div class="dmc" ${types[0]}></div>
+        <div class="dmc" ${types[1]}></div>
+        <div class="dmc" ${types[2]}></div>
+      </div>
+      <div class="deck-info">
+        <div class="deck-info-name">${esc(d.name)}${starterBadge}</div>
+        <div class="deck-info-stats">
+          <span>メイン: ${mCount}枚</span>
+          <span>エクストラ: ${eCount}枚</span>
+          <span style="color:${costCol}">コスト: ${usedCost}/${limitCost}${costOver?' ⚠️':''}</span>
+        </div>
+      </div>
+      <div class="deck-actions">
+        <button class="btn btn-outline btn-sm" onclick="loadDeck('${d.id}')">編集</button>
+        <button class="btn btn-outline btn-sm" onclick="exportOneDeck('${d.id}')">📤</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteDeck('${d.id}')">削除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function loadDeck(id) {
+  const d = S.decks.find(x => x.id === id);
+  if (!d) return;
+  S.deck = { id: d.id, name: d.name, main: [...(d.main||[])], extra: [...(d.extra||[])] };
+  document.getElementById('deck-name-in').value = d.name;
+  showSec('deckbuilder');
+}
+
+function deleteDeck(id) {
+  if (!confirm('このデッキを削除しますか？')) return;
+  S.decks = S.decks.filter(x => x.id !== id);
+  storeDel('deck:' + id);
+  toast('デッキを削除しました', 'success');
+  renderDeckList();
+}
+
+function exportOneDeck(id) {
+  const d = S.decks.find(x => x.id === id);
+  if (!d) return;
+  downloadJSON(d, `${d.name || 'deck'}.json`);
+}
+
+/* ===========================
+   UTILS
+=========================== */
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  const cont = document.getElementById('toast-container');
+  cont.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+/* ===========================
+   COST SYSTEM
+=========================== */
+const RANK_LIMITS = {normal:10, rare:13, superrare:16, legend:20};
+const RANK_LABELS = {normal:'ノーマル', rare:'レア', superrare:'S.レア', legend:'レジェンド'};
+const EFF_COSTS = {
+  draw:2, atk_up:1, atk_down:2, def_up:1, buff_all:3,
+  lp_heal:1, lp_damage:2, destroy_1:3, destroy_spell:2, destroy_all:6,
+  special_summon:3, negate_effect:4, negate_attack:3,
+  search:4, banish:3, bounce:2, graveyard:2, token:2
+};
+
+function getStatCost(val) {
+  if (val <= 0)    return -2;
+  if (val <= 499)  return -1;
+  if (val <= 999)  return 0;
+  if (val <= 1499) return 1;
+  if (val <= 1999) return 2;
+  if (val <= 2499) return 3;
+  if (val <= 2999) return 4;
+  if (val <= 3499) return 5;
+  return 6;
+}
+
+function getLvCost(lv) {
+  if (lv >= 9) return 3;
+  if (lv >= 7) return 2;
+  if (lv >= 5) return 1;
+  return 0;
+}
+
+function getEffCost(e) {
+  let ec = EFF_COSTS[e.type] || 1;
+  const p = e.params || {};
+  if (e.type === 'draw'       && parseInt(p.n)   >= 2) ec = 3;
+  if (e.type === 'atk_up'    && parseInt(p.amt) >= 1000) ec = 2;
+  if (e.type === 'atk_down'  && parseInt(p.amt) >= 1000) ec = 3;
+  if (e.type === 'lp_heal'   && parseInt(p.amt) >= 1000) ec = 2;
+  if (e.type === 'lp_damage' && parseInt(p.amt) >= 1000) ec = 3;
+  if (e.type === 'destroy_all' && p.scope === 'all') ec = 6;
+  if (e.type === 'destroy_all' && p.scope !== 'all') ec = 4;
+  if (e.type === 'buff_all'  && parseInt(p.amt) >= 800)  ec = 4;
+  return ec;
+}
+
+function calcCardCost(c) {
+  const breakdown = [];
+  let total = 0;
+  if (c.type === 'monster') {
+    const ac = getStatCost(c.atk || 0);
+    const dc = getStatCost(c.def || 0);
+    const lc = getLvCost(c.level || 1);
+    if (ac !== 0) { breakdown.push({ label: `ATK(${c.atk||0})`, cost: ac }); total += ac; }
+    if (dc !== 0) { breakdown.push({ label: `DEF(${c.def||0})`, cost: dc }); total += dc; }
+    if (lc  >  0) { breakdown.push({ label: `Lv${c.level}`,     cost: lc }); total += lc; }
+  }
+  (c.effects || []).forEach(e => {
+    const ec = getEffCost(e);
+    breakdown.push({ label: e.label || e.type, cost: ec });
+    total += ec;
+  });
+  return { total, breakdown };
+}
+
+function calcDeckCost(deck) {
+  return (deck.main || []).reduce((sum, id) => {
+    const c = S.cards.find(x => x.id === id);
+    return sum + (c ? (calcCardCost(c).total) : 0);
+  }, 0);
+}
+
+function getCostColor(deck) {
+  const mc = (deck.main||[]).length;
+  const limit = mc * 10;
+  const used = calcDeckCost(deck);
+  if (used > limit) return '#e84a3a';
+  if (used > limit * 0.85) return 'var(--gold2)';
+  return '#4ae878';
+}
+
+function setRank(rank, btn) {
+  S.c.rank = rank;
+  document.querySelectorAll('.rank-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  upCostMeter();
+  upPrev();
+}
+
+function upCostMeter() {
+  const c = getCreatorCard();
+  const { total, breakdown } = calcCardCost(c);
+  const limit = RANK_LIMITS[c.rank || 'normal'];
+  const pct = Math.min(100, (total / limit) * 100);
+  const isOver = total > limit;
+  const isWarn = total > limit * 0.8 && !isOver;
+  const color = isOver ? '#e84a3a' : isWarn ? 'var(--gold2)' : '#4ae878';
+  const cls = isOver ? 'over' : isWarn ? 'warn' : 'ok';
+
+  const valEl = document.getElementById('cost-val');
+  const barEl = document.getElementById('cost-bar');
+  const limitEl = document.getElementById('cost-limit');
+  const bdEl = document.getElementById('cost-breakdown');
+  if (!valEl) return;
+
+  valEl.textContent = total;
+  valEl.className = `cost-meter-val ${cls}`;
+  limitEl.textContent = limit;
+  barEl.style.width = pct + '%';
+  barEl.style.background = color;
+
+  bdEl.innerHTML = breakdown.map(b => {
+    const sign = b.cost > 0 ? '+' : '';
+    const col = b.cost < 0 ? '#4ae878' : b.cost > 2 ? '#e87040' : 'var(--text2)';
+    return `<span class="cost-chip" style="color:${col}">${esc(b.label)}: ${sign}${b.cost}pt</span>`;
+  }).join('');
+}
+
+/* ===========================
+   INIT
+=========================== */
+async function init() {
+  await loadAll();
+  initLevelSelector();
+  initDefIcons();
+  upPrev();
+  if (S.cards.length === 0) {
+    await generateStarterDecks();
+  }
+  // Check URL for shared card
+  const params = new URLSearchParams(location.search);
+  const cardB64 = params.get('card');
+  if (cardB64) {
+    try {
+      const json = decodeURIComponent(escape(atob(cardB64)));
+      const c = JSON.parse(json);
+      const exists = S.cards.find(x => x.id === c.id);
+      if (!exists) {
+        S.cards.push(c);
+        await storeSave('card:' + c.id, c);
+        toast(`カード「${c.name}」をインポートしました！`, 'success');
+        showSec('mycards');
+        return;
+      } else {
+        toast(`カード「${c.name}」は既に存在します`, 'success');
+      }
+    } catch(e) {}
+  }
+  showSec('home');
+}
+
+async function tryRegenStarters(){
+  if(!confirm('スターターデッキ（炎の勇者団・蒼の守護者）を再生成しますか？\n既存のスターターカード・デッキは上書きされます。')) return;
+  // Remove old starters
+  const oldCards = S.cards.filter(c => c.id.startsWith('st_'));
+  oldCards.forEach(c => { storeDel('card:' + c.id); });
+  S.cards = S.cards.filter(c => !c.id.startsWith('st_'));
+  S.decks = S.decks.filter(d => d.id !== 'starter_fire' && d.id !== 'starter_blue');
+  storeDel('deck:starter_fire'); storeDel('deck:starter_blue');
+  await generateStarterDecks();
+  renderDeckList();
+  toast('スターターデッキを再生成しました！', 'success');
+}
+
+/* ===========================
+   STARTER DECKS
+=========================== */
+function mkCard(id,name,type,subtype,attr,race,lv,atk,def,icon,rank,effects,custom){
+  const c={id,name,type,subtype,attr,race,level:lv,atk,def,image:null,defIcon:icon,rank:rank||'normal',effects:effects||[],custom:custom||'',createdAt:1000};
+  c.cost = calcCardCost(c).total;
+  return c;
+}
+function mkEff(type,params){
+  const def=EFFECT_DEFS[type];
+  const p=params||{};
+  if(!def)return null;
+  const text=(TIMING_TEXT['main']||'')+(COST_TEXT['none']||'')+def.gen(p);
+  return{type,label:def.label,timing:'main',cost:'none',params:p,text};
+}
+
+async function generateStarterDecks(){
+  const allCards=[];
+  // ============ 炎の勇者団カード ============
+  const fire=[
+    mkCard('st_f01','炎竜騎士','monster','effect','炎','ドラゴン族',4,1800,800,'🐉','normal',[mkEff('destroy_1',{target:'opp_monster'})],'炎を纏う竜の騎士'),
+    mkCard('st_f02','灼熱の戦士','monster','effect','炎','戦士族',3,1500,500,'⚔️','normal',[mkEff('atk_up',{tgt:'self',amt:'500',dur:'turn'})],'炎の力で自身を強化する'),
+    mkCard('st_f03','火炎剣士','monster','normal','炎','戦士族',4,1600,1200,'🗡️','normal',[],'灼熱の剣を操る戦士'),
+    mkCard('st_f04','炎の魔道士','monster','effect','炎','魔法使い族',3,1200,800,'🔮','normal',[mkEff('lp_damage',{amt:'500'})],'炎の魔法で相手を焼き尽くす'),
+    mkCard('st_f05','爆炎ドラゴン','monster','effect','炎','ドラゴン族',5,2200,1000,'🐉','rare',[mkEff('destroy_1',{target:'opp_any'})],'爆炎をまとう上位竜'),
+    mkCard('st_f06','炎王獣','monster','effect','炎','獣族',4,1700,600,'🦅','normal',[mkEff('atk_up',{tgt:'one',amt:'500',dur:'turn'})],'炎の王として降り立つ'),
+    mkCard('st_f07','熱血勇者','monster','effect','炎','戦士族',2,1000,500,'⚔️','normal',[mkEff('special_summon',{from:'hand',cond:'lv4'})],'仲間を呼び込む熱き勇者'),
+    mkCard('st_f08','火炎精霊','monster','effect','炎','炎族',1,500,200,'🔥','normal',[mkEff('draw',{n:'1'})],'小さな炎の精霊'),
+    mkCard('st_f09','爆炎武者','monster','normal','炎','戦士族',4,1900,0,'🗡️','normal',[],'防御を捨て攻撃に特化'),
+    mkCard('st_f10','炎守護竜','monster','effect','炎','ドラゴン族',6,2400,1600,'🐉','rare',[mkEff('negate_attack',{scope:'one'})],'守護の炎で攻撃を無効化'),
+    mkCard('st_f11','灼熱兵','monster','normal','炎','戦士族',3,1300,900,'⚔️','normal',[],'前線を担う炎の兵士'),
+    mkCard('st_f12','炎魔狼','monster','effect','炎','獣族',2,900,400,'🐺','normal',[mkEff('atk_up',{tgt:'self',amt:'300',dur:'turn'})],'炎の力で変身する狼'),
+    mkCard('st_f13','爆炎の巨人','monster','effect','炎','戦士族',6,2300,1200,'⚔️','rare',[mkEff('destroy_all',{scope:'opp'})],'爆炎で敵を一掃する巨人'),
+    mkCard('st_f14','炎蛇使い','monster','effect','炎','爬虫類族',3,1100,700,'🐍','normal',[mkEff('lp_damage',{amt:'300'})],'炎の蛇を操る使い手'),
+    mkCard('st_f15','炎の英雄','monster','effect','炎','戦士族',4,1800,1000,'⚔️','normal',[mkEff('special_summon',{from:'grave',cond:'lv4'})],'墓地から仲間を蘇らせる'),
+    mkCard('st_f16','爆炎司令官','monster','effect','炎','戦士族',5,2100,1400,'⚔️','rare',[mkEff('buff_all',{amt:'300',dur:'turn'})],'全軍を鼓舞する司令官'),
+    mkCard('st_f17','炎の剣','magic','normal','炎',null,null,null,null,'🗡️','normal',[mkEff('atk_up',{tgt:'one',amt:'1000',dur:'turn'})],'炎の力を宿した剣'),
+    mkCard('st_f18','業火','magic','normal','炎',null,null,null,null,'🔥','normal',[mkEff('destroy_1',{target:'opp_monster'})],'すべてを焼き尽くす業火'),
+    mkCard('st_f19','炎の誓い','magic','normal','炎',null,null,null,null,'✨','normal',[mkEff('draw',{n:'2'})],'炎の誓いを立て力を引き出す'),
+    mkCard('st_f20','爆炎波動','magic','normal','炎',null,null,null,null,'🔥','normal',[mkEff('lp_damage',{amt:'1000'})],'相手に爆炎の波動を浴びせる'),
+    mkCard('st_f21','灼熱フィールド','magic','continuous','炎',null,null,null,null,'🔥','rare',[mkEff('buff_all',{amt:'300',dur:'perm'})],'フィールドを灼熱で満たす'),
+    mkCard('st_f22','炎の招集','magic','quick','炎',null,null,null,null,'🔮','normal',[mkEff('special_summon',{from:'hand',cond:'lv4'})],'仲間を素早く呼び出す'),
+    mkCard('st_f23','炎剣の舞','magic','quick','炎',null,null,null,null,'🗡️','normal',[mkEff('atk_up',{tgt:'self',amt:'500',dur:'turn'})],'素早く発動できる強化魔法'),
+    mkCard('st_f24','焦熱の嵐','magic','normal','炎',null,null,null,null,'🌪️','rare',[mkEff('destroy_all',{scope:'opp'})],'相手のフィールドを焦熱の嵐で一掃'),
+    mkCard('st_f25','炎の罠陣','trap','normal','炎',null,null,null,null,'🕸️','normal',[mkEff('destroy_1',{target:'opp_monster'})],'炎の罠でモンスターを捕らえる'),
+    mkCard('st_f26','爆炎の盾','trap','normal','炎',null,null,null,null,'🛡️','normal',[mkEff('atk_up',{tgt:'one',amt:'800',dur:'turn'})],'攻撃を利用して強化する'),
+    mkCard('st_f27','炎の反撃','trap','normal','炎',null,null,null,null,'🔥','normal',[mkEff('lp_damage',{amt:'500'})],'反撃の炎を放つ'),
+    mkCard('st_f28','炎の連鎖','trap','counter','炎',null,null,null,null,'🕸️','rare',[mkEff('negate_effect',{tgt:'opponent'})],'炎の連鎖で効果を無効化'),
+    mkCard('st_f29','業火の守護','trap','continuous','炎',null,null,null,null,'🛡️','normal',[mkEff('atk_up',{tgt:'all',amt:'200',dur:'perm'})],'炎の守護が全軍を強化'),
+    mkCard('st_f30','炎帝の怒り','trap','normal','炎',null,null,null,null,'🔥','rare',[mkEff('destroy_all',{scope:'opp'})],'炎帝の怒りが全てを焼き尽くす'),
+  ];
+  // ============ 蒼の守護者カード ============
+  const blue=[
+    mkCard('st_b01','蒼海竜士','monster','effect','水','海竜族',4,1400,2000,'🌊','normal',[mkEff('lp_heal',{amt:'500'})],'海の守護者として君臨する'),
+    mkCard('st_b02','氷晶の守護者','monster','effect','水','水族',4,1000,2400,'💧','normal',[mkEff('negate_attack',{scope:'one'})],'氷の盾で攻撃を防ぐ'),
+    mkCard('st_b03','蒼天使','monster','effect','光','天使族',3,1000,1800,'💎','rare',[mkEff('search',{what:'any'})],'天使の力でカードを呼び寄せる'),
+    mkCard('st_b04','水の精霊','monster','effect','水','水族',2,800,1600,'💧','normal',[mkEff('draw',{n:'1'})],'水の精霊が知恵を授ける'),
+    mkCard('st_b05','蒼の賢者','monster','effect','光','魔法使い族',3,1200,1400,'🔮','normal',[mkEff('search',{what:'monster'})],'賢者の知恵でモンスターを呼ぶ'),
+    mkCard('st_b06','氷霊竜','monster','effect','水','海竜族',5,2000,2200,'🌊','rare',[mkEff('bounce',{tgt:'opp_1'})],'氷の力で相手を吹き飛ばす'),
+    mkCard('st_b07','水神獣','monster','normal','水','獣族',4,1600,1800,'🐺','normal',[],'水の加護を受けた神聖な獣'),
+    mkCard('st_b08','蒼守護獣','monster','effect','水','獣族',4,1200,2000,'🦋','normal',[mkEff('lp_heal',{amt:'1000'})],'仲間のLPを回復する守護獣'),
+    mkCard('st_b09','氷の女剣士','monster','effect','水','戦士族',3,1400,1200,'🗡️','normal',[mkEff('graveyard',{tgt:'own_monster'})],'墓地から仲間を回収する剣士'),
+    mkCard('st_b10','蒼竜騎士','monster','effect','水','ドラゴン族',4,1800,1400,'🐉','normal',[mkEff('bounce',{tgt:'opp_1'})],'竜の力で相手を押し返す'),
+    mkCard('st_b11','光の守護兵','monster','normal','光','天使族',3,1300,1500,'💎','normal',[],'光の加護で守られた兵士'),
+    mkCard('st_b12','蒼の魔法使い','monster','effect','水','魔法使い族',2,900,1400,'🔮','normal',[mkEff('lp_heal',{amt:'500'})],'水の魔法でLPを回復する'),
+    mkCard('st_b13','氷結の巫女','monster','effect','水','魔法使い族',4,1500,1700,'🔮','rare',[mkEff('graveyard',{tgt:'own_any'})],'墓地から何でも回収できる巫女'),
+    mkCard('st_b14','蒼海の化身','monster','effect','水','海竜族',6,2200,2000,'🌊','rare',[mkEff('draw',{n:'2'})],'海の化身が知識をもたらす'),
+    mkCard('st_b15','白銀騎士','monster','normal','光','戦士族',4,1700,1500,'⚔️','normal',[],'光を纏う銀の騎士'),
+    mkCard('st_b16','蒼天の守護神','monster','effect','光','天使族',6,2400,2000,'💎','rare',[mkEff('negate_effect',{tgt:'opponent'})],'天の守護神が敵の効果を無効化'),
+    mkCard('st_b17','癒しの泉','magic','normal','水',null,null,null,null,'💧','normal',[mkEff('lp_heal',{amt:'1000'})],'癒しの泉でLPを回復する'),
+    mkCard('st_b18','蒼の知恵','magic','normal','光',null,null,null,null,'📚','normal',[mkEff('draw',{n:'2'})],'賢者の知恵でカードを引く'),
+    mkCard('st_b19','守護の光','magic','continuous','光',null,null,null,null,'💎','rare',[mkEff('lp_heal',{amt:'500'})],'永続的に守護の光が輝く'),
+    mkCard('st_b20','蒼の転送陣','magic','normal','水',null,null,null,null,'🌊','normal',[mkEff('search',{what:'monster'})],'モンスターをデッキからサーチ'),
+    mkCard('st_b21','氷の壁','magic','normal','水',null,null,null,null,'🛡️','normal',[mkEff('bounce',{tgt:'opp_1'})],'氷の壁で相手カードを押し返す'),
+    mkCard('st_b22','蒼天聖剣','magic','quick','光',null,null,null,null,'🗡️','normal',[mkEff('atk_up',{tgt:'one',amt:'800',dur:'turn'})],'聖なる剣の力で急上昇'),
+    mkCard('st_b23','浄化の光','magic','normal','光',null,null,null,null,'✨','normal',[mkEff('destroy_spell',{target:'opp_1'})],'光の力で魔法・罠を消す'),
+    mkCard('st_b24','氷結フィールド','magic','continuous','水',null,null,null,null,'❄️','rare',[mkEff('atk_down',{tgt:'all',amt:'300',dur:'perm'})],'敵全軍のATKを下げるフィールド'),
+    mkCard('st_b25','蒼の護陣','trap','normal','水',null,null,null,null,'🛡️','normal',[mkEff('negate_attack',{scope:'one'})],'攻撃を防ぐ蒼の護陣'),
+    mkCard('st_b26','氷の反射','trap','counter','水',null,null,null,null,'💧','rare',[mkEff('negate_effect',{tgt:'opponent'})],'氷のように冷たく効果を跳ね返す'),
+    mkCard('st_b27','蒼の結界','trap','continuous','水',null,null,null,null,'🔮','normal',[mkEff('lp_heal',{amt:'500'})],'永続的に守護する蒼の結界'),
+    mkCard('st_b28','光の裁き','trap','normal','光',null,null,null,null,'💎','normal',[mkEff('destroy_1',{target:'opp_monster'})],'光の裁きでモンスターを破壊'),
+    mkCard('st_b29','氷結の罠','trap','normal','水',null,null,null,null,'🕸️','normal',[mkEff('bounce',{tgt:'opp_1'})],'氷の罠で相手を手札に戻す'),
+    mkCard('st_b30','蒼天の奇跡','trap','normal','光',null,null,null,null,'✨','rare',[mkEff('graveyard',{tgt:'own_any'})],'奇跡の力で墓地からカードを回収'),
+  ];
+
+  // Save all cards
+  for(const c of [...fire,...blue]) {
+    if (!S.cards.find(x=>x.id===c.id)) {
+      S.cards.push(c);
+      await storeSave('card:' + c.id, c);
+    }
+  }
+
+  // Build deck 1: 炎の勇者団 (main: 30, extra: 0)
+  const fDeck = {
+    id: 'starter_fire', name: '炎の勇者団',
+    main: fire.map(c=>c.id),
+    extra: [],
+    savedAt: Date.now(),
+    isStarter: true,
+  };
+  // Build deck 2: 蒼の守護者 (main: 30, extra: 0)
+  const bDeck = {
+    id: 'starter_blue', name: '蒼の守護者',
+    main: blue.map(c=>c.id),
+    extra: [],
+    savedAt: Date.now(),
+    isStarter: true,
+  };
+
+  if (!S.decks.find(x=>x.id==='starter_fire')) {
+    S.decks.push(fDeck);
+    await storeSave('deck:starter_fire', fDeck);
+  }
+  if (!S.decks.find(x=>x.id==='starter_blue')) {
+    S.decks.push(bDeck);
+    await storeSave('deck:starter_blue', bDeck);
+  }
+  toast('🎴 スターターデッキを追加しました！', 'success');
+}
+
+/* ===========================
+   DUEL ENGINE
+=========================== */
+const DS={
+  active:false,turn:0,turnCount:1,phase:'main1',firstTurn:true,
+  state:'idle', // idle|tribute|target|attack
+  tribute:{needed:0,selected:[],pendingHand:-1,pendingPos:'atk'},
+  target:{filter:null,cb:null,label:''},
+  attackSrc:null,
+  selected:null,
+  players:[null,null],
+  buffs:[],
+  log:[]
+};
+const PHASE_LIST=['draw','standby','main1','battle','main2','end'];
+const PHASE_NAMES={draw:'ドロー',standby:'スタンバイ',main1:'メイン1',battle:'バトル',main2:'メイン2',end:'エンド'};
+
+function mkPlayer(name,deckIds,extraIds){
+  const deck=shuffle([...deckIds].map(id=>S.cards.find(c=>c.id===id)).filter(Boolean));
+  const extra=[...extraIds].map(id=>S.cards.find(c=>c.id===id)).filter(Boolean);
+  return{name,lp:4000,hand:[],deck,grave:[],extra,removed:[],
+    field:{monsters:[null,null,null],spells:[null,null,null]},
+    summonedMain:false,attackedIdxs:new Set()};
+}
+function mkFC(card,pos='atk',faceUp=true){
+  return{card,pos,faceUp,effUsed:false,justSummoned:true,justSet:true,attacked:false};
+}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+function opp(p){return 1-p;}
+
+/* ---- SETUP ---- */
+function onShowDuel(){
+  const s1=document.getElementById('p1-deck-sel');
+  const s2=document.getElementById('p2-deck-sel');
+  if(!s1||!s2)return;
+  const mkOpt = d => {
+    const mc = (d.main||[]).length;
+    const used = calcDeckCost(d);
+    const limit = mc * 10;
+    const over = used > limit ? ' ⚠️' : '';
+    return `<option value="${d.id}">${esc(d.name)} (${mc}枚 / ${used}pt${over})</option>`;
+  };
+  const opts = S.decks.length
+    ? S.decks.map(mkOpt).join('')
+    : '<option value="">（デッキがありません）</option>';
+  s1.innerHTML=opts; s2.innerHTML=opts;
+  if(S.decks.length>1) s2.value=S.decks[1].id;
+  setDuelMode('local');
+}
+
+DS.duelMode = 'balanced'; // 'balanced' | 'free'
+
+function setLocalDuelMode(mode) {
+  DS.duelMode = mode;
+  document.getElementById('dm-balanced').classList.toggle('active', mode === 'balanced');
+  document.getElementById('dm-free').classList.toggle('active', mode === 'free');
+  const info = document.getElementById('balanced-info');
+  if (info) info.style.display = mode === 'balanced' ? 'block' : 'none';
+}
+
+function startDuel(){
+  const d1id=document.getElementById('p1-deck-sel').value;
+  const d2id=document.getElementById('p2-deck-sel').value;
+  const n1=document.getElementById('p1-name').value.trim()||'Player 1';
+  const n2=document.getElementById('p2-name').value.trim()||'Player 2';
+  const d1=S.decks.find(x=>x.id===d1id);
+  const d2=S.decks.find(x=>x.id===d2id);
+  if(!d1||!d2){toast('デッキを選択してください','error');return;}
+  if((d1.main||[]).length<20){toast(`${n1}のデッキが20枚未満です`,'error');return;}
+  if((d2.main||[]).length<20){toast(`${n2}のデッキが20枚未満です`,'error');return;}
+  // Balanced mode cost check
+  if (DS.duelMode === 'balanced') {
+    const c1 = calcDeckCost(d1), l1 = (d1.main||[]).length * 10;
+    const c2 = calcDeckCost(d2), l2 = (d2.main||[]).length * 10;
+    if (c1 > l1) { toast(`${n1}のデッキがコスト上限を超えています（${c1}/${l1}）`, 'error'); return; }
+    if (c2 > l2) { toast(`${n2}のデッキがコスト上限を超えています（${c2}/${l2}）`, 'error'); return; }
+  }
+
+  DS.active=true;DS.turn=0;DS.turnCount=1;DS.firstTurn=true;
+  DS.phase='main1';DS.state='idle';DS.buffs=[];DS.log=[];
+  DS.players[0]=mkPlayer(n1,d1.main||[],d1.extra||[]);
+  DS.players[1]=mkPlayer(n2,d2.main||[],d2.extra||[]);
+  drawCard(0,5);drawCard(1,5);
+
+  document.getElementById('duel-setup').classList.add('hidden');
+  document.getElementById('duel-field').classList.remove('hidden');
+  document.getElementById('duel-log').innerHTML='';
+  addLog(`⚔ デュエル開始！ ${n1} vs ${n2}　[${DS.duelMode==='balanced'?'⚖バランスモード':'🔥フリーモード'}]`,'lgi');
+  addLog(`${n1} の先攻ターン（メインフェイズ1）`,'lgi');
+  renderDuel();
+}
+
+/* ---- PHASE ENGINE ---- */
+function advancePhase(){
+  hideActions();
+  if(DS.state==='tribute'){cancelTribute();return;}
+  if(DS.state==='attack'){cancelAttack();return;}
+  if(DS.state==='target'){cancelTarget();return;}
+
+  const cur=PHASE_LIST.indexOf(DS.phase);
+  let next=PHASE_LIST[cur+1];
+  if(!next){doEndPhase();return;}
+  if(next==='battle'&&DS.firstTurn&&DS.turn===0){next='main2';}
+  DS.phase=next;
+  if(DS.phase==='draw'){doDrawPhase();}
+  else if(DS.phase==='end'){doEndPhase();}
+  else{
+    const hints={
+      standby:'スタンバイフェイズ — 永続効果が発動します',
+      main1:'メインフェイズ1 — 召喚・魔法・罠を使えます',
+      battle:'バトルフェイズ — モンスターで攻撃できます',
+      main2:'メインフェイズ2 — 追加の魔法・罠を使えます',
+    };
+    addLog(`${DS.players[DS.turn].name} ─ ${hints[DS.phase]||PHASE_NAMES[DS.phase]}`,'lgi');
+    renderDuel();
+  }
+}
+
+function doDrawPhase(){
+  if(!(DS.firstTurn&&DS.turn===0)){
+    drawCard(DS.turn,1);
+    addLog(`${DS.players[DS.turn].name} がドロー（手札${DS.players[DS.turn].hand.length}枚）`,'');
+  } else {
+    addLog(`${DS.players[DS.turn].name} の先攻ターン — ドローなし`,'');
+  }
+  DS.phase='standby';
+  addLog(`${DS.players[DS.turn].name} ─ スタンバイフェイズ — 永続効果が発動します`,'lgi');
+  // Auto-trigger standby effects on continuous cards
+  [0,1].forEach(p=>{
+    DS.players[p].field.spells.forEach(fc=>{
+      if(fc&&fc.faceUp&&fc.card.subtype==='continuous'&&fc.card.effects){
+        fc.card.effects.forEach(e=>{
+          if(e.timing==='standby'){
+            addLog(`「${fc.card.name}」のスタンバイ効果が発動`,'lgs');
+            activateOneEff(e,p,opp(p),fc.card,{zone:'spells',idx:DS.players[p].field.spells.indexOf(fc)});
+          }
+        });
+      }
+    });
+  });
+  renderDuel();
+}
+
+function doEndPhase(){
+  DS.phase='end';
+  const p=DS.players[DS.turn];
+  while(p.hand.length>6){
+    const c=p.hand.pop();p.grave.push(c);
+    addLog(`${p.name} が「${c.name}」を手札超過で墓地へ`,'');
+  }
+  p.summonedMain=false;
+  p.attackedIdxs=new Set();
+  clearTurnBuffs();
+  ['monsters','spells'].forEach(z=>p.field[z].forEach(fc=>{if(fc){fc.justSummoned=false;fc.justSet=false;fc.attacked=false;}}));
+  DS.firstTurn=false;
+  nextTurn();
+}
+
+function nextTurn(){
+  DS.turn=opp(DS.turn);
+  DS.turnCount++;
+  DS.phase='draw';
+  DS.selected=null;DS.attackSrc=null;
+  addLog(`─── ${DS.players[DS.turn].name} のターン（${DS.turnCount}ターン目）───`,'lgi');
+  doDrawPhase();
+}
+
+/* ---- CARD OPS ---- */
+function drawCard(p,n=1){
+  const pl=DS.players[p];
+  for(let i=0;i<n;i++){
+    if(!pl.deck.length){addLog(`${pl.name} のデッキが尽きた！デッキアウト！`,'lgd');endDuel(opp(p));return;}
+    pl.hand.push(pl.deck.pop());
+  }
+}
+
+function toGrave(p,zone,idx){
+  const pl=DS.players[p];
+  const fc=pl.field[zone][idx];
+  if(!fc)return;
+  pl.grave.push(fc.card);
+  pl.field[zone][idx]=null;
+  addLog(`「${fc.card.name}」が墓地へ`,'');
+}
+
+/* ---- SUMMON ---- */
+function tryNormalSummon(p,handIdx,pos='atk'){
+  const pl=DS.players[p];
+  const card=pl.hand[handIdx];
+  if(!card)return;
+  const lv=card.level||1;
+  const tribN=lv>=7?2:lv>=5?1:0;
+  const hasSlot=pl.field.monsters.some(x=>!x);
+  if(!hasSlot){toast('モンスターゾーンが満杯です','error');return;}
+  if(tribN===0){
+    const slot=pl.field.monsters.findIndex(x=>!x);
+    const [c]=pl.hand.splice(handIdx,1);
+    pl.field.monsters[slot]=mkFC(c,pos,true);
+    pl.summonedMain=true;
+    addLog(`${pl.name} が「${c.name}」を通常召喚！（${pos.toUpperCase()}）`,'lgs');
+    DS.selected=null;renderDuel();
+  } else {
+    const avail=pl.field.monsters.filter(x=>x).length;
+    if(avail<tribN){toast(`リリースが${tribN}体必要です`,'error');return;}
+    DS.state='tribute';
+    DS.tribute={needed:tribN,selected:[],pendingHand:handIdx,pendingPos:pos};
+    addLog(`リリースするモンスターを${tribN}体選んでください`,'lgi');
+    updateStatusBanner();renderDuel();
+  }
+}
+
+function tributeClick(idx){
+  if(DS.state!=='tribute')return;
+  const pl=DS.players[DS.turn];
+  if(!pl.field.monsters[idx])return;
+  const already=DS.tribute.selected.indexOf(idx);
+  if(already>=0){DS.tribute.selected.splice(already,1);}
+  else{DS.tribute.selected.push(idx);}
+  if(DS.tribute.selected.length>=DS.tribute.needed){
+    DS.tribute.selected.forEach(i=>toGrave(DS.turn,'monsters',i));
+    const handIdx=DS.tribute.pendingHand;
+    const pos=DS.tribute.pendingPos;
+    const slot=pl.field.monsters.findIndex(x=>!x);
+    if(slot===-1){toast('モンスターゾーンが満杯です','error');cancelTribute();return;}
+    // Adjust handIdx after possible hand shifts (none here - we only removed field cards)
+    const [c]=pl.hand.splice(handIdx,1);
+    pl.field.monsters[slot]=mkFC(c,pos,true);
+    pl.summonedMain=true;
+    addLog(`${pl.name} が「${c.name}」をリリース召喚！`,'lgs');
+    cancelTribute();
+  } else {renderDuel();}
+}
+function cancelTribute(){DS.state='idle';DS.tribute={needed:0,selected:[],pendingHand:-1,pendingPos:'atk'};updateStatusBanner();renderDuel();}
+
+function doSetMonster(p,handIdx){
+  const pl=DS.players[p];
+  const slot=pl.field.monsters.findIndex(x=>!x);
+  if(slot===-1){toast('モンスターゾーンが満杯です','error');return;}
+  const [c]=pl.hand.splice(handIdx,1);
+  pl.field.monsters[slot]=mkFC(c,'def',false);pl.summonedMain=true;
+  addLog(`${pl.name} がモンスターをセット`,'');DS.selected=null;renderDuel();
+}
+
+function doSetST(p,handIdx){
+  const pl=DS.players[p];
+  const slot=pl.field.spells.findIndex(x=>!x);
+  if(slot===-1){toast('魔法・罠ゾーンが満杯です','error');return;}
+  const [c]=pl.hand.splice(handIdx,1);
+  pl.field.spells[slot]=mkFC(c,'def',false);
+  addLog(`${pl.name} がカードをセット`,'');DS.selected=null;renderDuel();
+}
+
+function doActivateSpellHand(p,handIdx){
+  const pl=DS.players[p];
+  const card=pl.hand[handIdx];
+  const isCont=card.subtype==='continuous';
+  pl.hand.splice(handIdx,1);
+  if(isCont){
+    const slot=pl.field.spells.findIndex(x=>!x);
+    if(slot===-1){pl.grave.push(card);}
+    else{pl.field.spells[slot]=mkFC(card,'def',true);pl.field.spells[slot].justSet=false;}
+    addLog(`${pl.name} が「${card.name}」を発動（永続）`,'lgs');
+  } else {
+    pl.grave.push(card);
+    addLog(`${pl.name} が「${card.name}」を発動`,'lgs');
+  }
+  if(card.effects&&card.effects.length)activateEffects(card.effects,p,opp(p),card,null);
+  DS.selected=null;renderDuel();
+}
+
+function doActivateFromField(p,zone,idx){
+  const pl=DS.players[p];
+  const fc=pl.field[zone][idx];
+  if(!fc||fc.justSet){toast('セットしたターンには発動できません','error');return;}
+  const card=fc.card;
+  addLog(`${pl.name} が「${card.name}」を発動`,'lgs');
+  fc.faceUp=true;
+  const isCont=card.subtype==='continuous';
+  if(!isCont){pl.field[zone][idx]=null;pl.grave.push(card);}
+  else{fc.effUsed=true;}
+  if(card.effects&&card.effects.length)activateEffects(card.effects,p,opp(p),card,{zone,idx});
+  renderDuel();
+}
+
+function doMonsterEff(p,idx){
+  const pl=DS.players[p];
+  const fc=pl.field.monsters[idx];
+  if(!fc||!fc.faceUp)return;
+  if(fc.effUsed){toast('この効果はすでに使用しました','error');return;}
+  if(!fc.card.effects||!fc.card.effects.length){toast('発動できる効果がありません','error');return;}
+  addLog(`${pl.name} が「${fc.card.name}」の効果を発動！`,'lgs');
+  fc.effUsed=true;
+  activateEffects(fc.card.effects,p,opp(p),fc.card,{zone:'monsters',idx});
+  renderDuel();
+}
+
+function doFlipSummon(p,idx){
+  const pl=DS.players[p];
+  const fc=pl.field.monsters[idx];
+  if(!fc||fc.faceUp||fc.justSet)return;
+  fc.faceUp=true;fc.pos='atk';
+  addLog(`${pl.name} が「${fc.card.name}」をリバース召喚！`,'lgs');
+  if(fc.card.effects)activateEffects(fc.card.effects,p,opp(p),fc.card,{zone:'monsters',idx});
+  renderDuel();
+}
+
+function doChangePos(p,idx){
+  const pl=DS.players[p];
+  const fc=pl.field.monsters[idx];
+  if(!fc||!fc.faceUp||fc.justSummoned)return;
+  fc.pos=fc.pos==='atk'?'def':'atk';fc.justSummoned=true;
+  addLog(`「${fc.card.name}」の表示形式を変更（${fc.pos.toUpperCase()}）`,'');renderDuel();
+}
+
+/* ---- ATTACK ---- */
+function startAttack(p,idx){
+  DS.state='attack';DS.attackSrc={p,idx};
+  const name=DS.players[p].field.monsters[idx].card.name;
+  addLog(`「${name}」で攻撃宣言！対象を選んでください`,'lgi');
+  updateStatusBanner();renderDuel();
+}
+function cancelAttack(){DS.state='idle';DS.attackSrc=null;updateStatusBanner();renderDuel();}
+
+function doAttack(targetP,targetIdx){
+  if(DS.state!=='attack')return;
+  const {p:ap,idx:ai}=DS.attackSrc;
+  const apl=DS.players[ap],dpl=DS.players[targetP];
+  const afc=apl.field.monsters[ai];
+  if(!afc)return;
+  const aATK=getEffAtk(ap,ai);
+  afc.attacked=true;apl.attackedIdxs.add(ai);
+
+  if(targetIdx===-1){
+    // Direct
+    const dmg=aATK;
+    dpl.lp=Math.max(0,dpl.lp-dmg);
+    flashLP('rgba(232,74,74,.6)');
+    addLog(`ダイレクトアタック！ ${dpl.name} に ${dmg} ダメージ！`,'lgd');
+  } else {
+    const dfc=dpl.field.monsters[targetIdx];
+    if(!dfc){cancelAttack();return;}
+    if(dfc.pos==='atk'){
+      const dATK=getEffAtk(targetP,targetIdx);
+      if(aATK>dATK){
+        const dmg=aATK-dATK;dpl.lp=Math.max(0,dpl.lp-dmg);
+        flashLP('rgba(232,74,74,.5)');
+        addLog(`「${afc.card.name}」(${aATK}) vs 「${dfc.card.name}」(${dATK}) → 「${dfc.card.name}」を破壊！${dmg}ダメージ！`,'lgd');
+        toGrave(targetP,'monsters',targetIdx);
+      } else if(aATK<dATK){
+        const dmg=dATK-aATK;apl.lp=Math.max(0,apl.lp-dmg);
+        flashLP('rgba(232,74,74,.5)');
+        addLog(`「${afc.card.name}」(${aATK}) vs 「${dfc.card.name}」(${dATK}) → 「${afc.card.name}」を破壊！${dmg}ダメージ！`,'lgd');
+        toGrave(ap,'monsters',ai);
+      } else {
+        flashLP('rgba(200,160,50,.4)');
+        addLog(`「${afc.card.name}」vs「${dfc.card.name}」→ 相打ち！`,'lgd');
+        toGrave(ap,'monsters',ai);toGrave(targetP,'monsters',targetIdx);
+      }
+    } else {
+      const dDEF=getEffDef(targetP,targetIdx);
+      if(aATK>dDEF){
+        addLog(`「${afc.card.name}」(${aATK}) vs 「${dfc.card.name}」DEF(${dDEF}) → 「${dfc.card.name}」を破壊！`,'lgd');
+        toGrave(targetP,'monsters',targetIdx);
+      } else if(aATK<dDEF){
+        const dmg=dDEF-aATK;apl.lp=Math.max(0,apl.lp-dmg);
+        flashLP('rgba(232,74,74,.4)');
+        addLog(`守備力の方が高い → ${apl.name} に ${dmg} ダメージ！`,'lgd');
+      } else {
+        addLog(`攻撃力と守備力が同じ → 変化なし`,'');
+      }
+    }
+  }
+  DS.state='idle';DS.attackSrc=null;
+  updateStatusBanner();checkWin();renderDuel();
+}
+
+/* ---- CLICK HANDLERS ---- */
+function zoneClick(p,zone,idx,ev){
+  if(ev)ev.stopPropagation();
+  if(LP.triggered){LP.triggered=false;return;}
+  const fc=DS.players[p].field[zone][idx];
+  const ap=DS.turn;
+
+  if(DS.state==='tribute'&&p===ap&&zone==='monsters'){tributeClick(idx);return;}
+  if(DS.state==='attack'){
+    const {p:ap2}=DS.attackSrc;
+    if(p===opp(ap2)&&zone==='monsters')doAttack(p,idx);
+    return;
+  }
+  if(DS.state==='target'){
+    if(DS.target.filter&&DS.target.filter(p,zone,idx)){
+      const cb=DS.target.cb;
+      DS.state='idle';DS.target={filter:null,cb:null,label:''};
+      updateStatusBanner();
+      cb(p,zone,idx);
+    }
+    return;
+  }
+
+  if(!fc){hideActions();return;}
+  DS.selected={p,zone,idx};
+  const rect=ev?ev.target.getBoundingClientRect():{left:window.innerWidth/2,top:window.innerHeight/2,width:0,height:0};
+  showZoneActions(p,zone,idx,fc,rect.left+rect.width/2,rect.top);
+  renderDuel();
+}
+
+function directClick(p,ev){
+  if(ev)ev.stopPropagation();
+  if(DS.state==='attack'){const{p:ap}=DS.attackSrc;if(p===opp(ap))doAttack(p,-1);}
+}
+
+function handClick(p,idx,ev){
+  if(ev)ev.stopPropagation();
+  if(LP.triggered){LP.triggered=false;return;}
+  if(DS.state!=='idle'){cancelAttack();cancelTribute();cancelTarget();return;}
+  if(p!==DS.turn)return;
+  const card=DS.players[p].hand[idx];
+  if(!card)return;
+  const rect=ev?ev.target.getBoundingClientRect():{left:window.innerWidth/2,top:window.innerHeight/2,width:0,height:0};
+  DS.selected=null;
+  hideActions();
+  showHandActions(p,idx,card,rect.left,rect.top-120);
+}
+
+/* ---- ACTION MENUS ---- */
+function showHandActions(p,idx,card,x,y){
+  const isMain=DS.phase==='main1'||DS.phase==='main2';
+  const pl=DS.players[p];
+  let items=[];
+  if(card.type==='monster'){
+    if(isMain&&!pl.summonedMain){
+      const lv=card.level||1;
+      const tribN=lv>=7?2:lv>=5?1:0;
+      const avail=pl.field.monsters.filter(x=>x).length;
+      const hasSlot=pl.field.monsters.some(x=>!x);
+      if(hasSlot&&(tribN===0||avail>=tribN)){
+        items.push({icon:'⬆️',label:'通常召喚（攻撃表示）',fn:`tryNormalSummon(${p},${idx},'atk')`});
+        items.push({icon:'🛡️',label:'通常召喚（守備表示）',fn:`tryNormalSummon(${p},${idx},'def')`});
+      }
+      if(hasSlot)items.push({icon:'⬇️',label:'セット（裏守備）',fn:`doSetMonster(${p},${idx})`});
+    }
+  } else if(card.type==='magic'){
+    if(isMain){
+      items.push({icon:'✨',label:'発動',fn:`doActivateSpellHand(${p},${idx})`});
+      items.push({icon:'⬇️',label:'セット',fn:`doSetST(${p},${idx})`});
+    }
+  } else if(card.type==='trap'){
+    if(isMain)items.push({icon:'⬇️',label:'セット',fn:`doSetST(${p},${idx})`});
+  }
+  if(!items.length){toast('このフェイズでは使用できません','error');return;}
+  renderActionMenu(items,x,y);
+}
+
+function showZoneActions(p,zone,idx,fc,x,y){
+  const isMyZone=p===DS.turn;
+  const isMain=DS.phase==='main1'||DS.phase==='main2';
+  const isBattle=DS.phase==='battle';
+  let items=[];
+  if(zone==='monsters'){
+    if(isMyZone){
+      if(!fc.faceUp&&isMain&&!fc.justSet)items.push({icon:'🔄',label:'リバース召喚',fn:`doFlipSummon(${p},${idx})`});
+      if(fc.faceUp&&isMain&&!fc.justSummoned)items.push({icon:'🔁',label:'表示形式変更',fn:`doChangePos(${p},${idx})`});
+      if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length&&isMain)
+        items.push({icon:'💥',label:'効果発動',fn:`doMonsterEff(${p},${idx})`});
+      if(isBattle&&fc.faceUp&&fc.pos==='atk'&&!DS.players[p].attackedIdxs.has(idx)&&!fc.justSummoned)
+        items.push({icon:'⚔️',label:'攻撃宣言！',fn:`startAttack(${p},${idx})`});
+    }
+  } else if(zone==='spells'){
+    if(isMyZone){
+      if(!fc.faceUp&&!fc.justSet)items.push({icon:'✨',label:'発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
+      if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length&&isMain)
+        items.push({icon:'💥',label:'効果を使う',fn:`doActivateFromField(${p},'${zone}',${idx})`});
+    } else if(!fc.faceUp&&!fc.justSet&&(isBattle||DS.phase==='standby')){
+      items.push({icon:'🕸️',label:'罠カード発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
+    }
+  }
+  items.push({icon:'👁️',label:'カードを見る',fn:`viewCardDetail('${fc.card.id||''}',\`${esc(fc.card.name)}\`)`});
+  if(!items.length){hideActions();return;}
+  renderActionMenu(items,x,y);
+}
+
+function renderActionMenu(items,x,y){
+  const menu=document.getElementById('action-menu');
+  menu.innerHTML=items.map(i=>`<div class="action-menu-item" onclick="hideActions();${i.fn};renderDuel()">${i.icon} ${i.label}</div>`).join('');
+  menu.classList.remove('hidden');
+  const menuW=170,menuH=items.length*38+10;
+  menu.style.left=Math.max(4,Math.min(x-menuW/2,window.innerWidth-menuW-4))+'px';
+  menu.style.top=Math.max(62,Math.min(y,window.innerHeight-menuH-8))+'px';
+}
+function hideActions(){document.getElementById('action-menu').classList.add('hidden');DS.selected=null;}
+
+function viewCardDetail(id,name){
+  const c=S.cards.find(x=>x.id===id)||(DS.players||[]).flatMap(p=>p?[...p.hand,...p.grave,...(p.extra||[])]:[] ).find(c=>c.name===name)||null;
+  if(!c){toast(name,'');return;}
+  showDetail(c.id);
+}
+
+/* ---- EFFECT SYSTEM ---- */
+function activateEffects(effs,srcP,dstP,srcCard,srcRef){
+  effs.forEach(e=>activateOneEff(e,srcP,dstP,srcCard,srcRef));
+}
+
+function activateOneEff(eff,srcP,dstP,srcCard,srcRef){
+  const src=DS.players[srcP],dst=DS.players[dstP];
+  const p=eff.params||{};
+  switch(eff.type){
+    case 'draw':{const n=parseInt(p.n)||1;drawCard(srcP,n);addLog(`「${srcCard.name}」の効果でカードを${n}枚ドロー`,'lgs');break;}
+    case 'lp_heal':{const a=parseInt(p.amt)||500;src.lp=Math.min(9999,src.lp+a);addLog(`「${srcCard.name}」の効果でLP+${a}`,'lgs');flashLP('rgba(74,232,120,.6)');updateBars();break;}
+    case 'lp_damage':{const a=parseInt(p.amt)||500;dst.lp=Math.max(0,dst.lp-a);addLog(`「${srcCard.name}」の効果で${dst.name}に${a}ダメージ！`,'lgd');flashLP('rgba(232,74,74,.6)');updateBars();checkWin();break;}
+    case 'destroy_all':{
+      const sc=p.scope||'all';
+      const tgts=sc==='opp'?[dstP]:sc==='own'?[srcP]:[0,1];
+      tgts.forEach(tp=>{const tpl=DS.players[tp];for(let i=0;i<3;i++){if(tpl.field.monsters[i])toGrave(tp,'monsters',i);if(tpl.field.spells[i])toGrave(tp,'spells',i);}});
+      addLog(`「${srcCard.name}」の効果でフィールドを一掃！`,'lgd');break;
+    }
+    case 'destroy_1':
+    case 'destroy_spell':{
+      const zone=eff.type==='destroy_spell'?'spells':'monsters';
+      const tgt=p.target||'opp_monster';
+      doTarget(
+        (pp,z,i)=>{const fc=DS.players[pp].field[z][i];if(!fc)return false;if(tgt==='any')return true;if(tgt==='opp_monster')return pp===dstP&&z==='monsters';if(tgt==='opp_any')return pp===dstP;if(tgt==='opp_1'||tgt==='opp_all')return pp===dstP&&z==='spells';return false;},
+        (pp,z,i)=>{const fc=DS.players[pp].field[z][i];addLog(`「${srcCard.name}」の効果で「${fc.card.name}」を破壊！`,'lgd');toGrave(pp,z,i);renderDuel();},
+        '破壊対象を選択'
+      );break;
+    }
+    case 'atk_up':{
+      const a=parseInt(p.amt)||500;const dur=p.dur||'turn';const tgt2=p.tgt||'self';
+      if(tgt2==='self'&&srcRef&&srcRef.zone==='monsters'){DS.buffs.push({targetP:srcP,targetIdx:srcRef.idx,stat:'atk',amount:a,until:dur});addLog(`「${srcCard.name}」ATK+${a}`,'lgs');}
+      else if(tgt2==='all'){for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push({targetP:srcP,targetIdx:i,stat:'atk',amount:a,until:dur});}addLog(`自軍全モンスターATK+${a}`,'lgs');}
+      else{doTarget((pp,z,i)=>pp===srcP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{DS.buffs.push({targetP:pp,targetIdx:i,stat:'atk',amount:a,until:dur});addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK+${a}`,'lgs');renderDuel();},'強化するモンスターを選択');}
+      break;
+    }
+    case 'atk_down':{
+      const a=parseInt(p.amt)||500;const dur=p.dur||'turn';const tgt2=p.tgt||'one';
+      if(tgt2==='all'){for(let i=0;i<3;i++){if(dst.field.monsters[i])DS.buffs.push({targetP:dstP,targetIdx:i,stat:'atk',amount:-a,until:dur});}addLog(`相手全モンスターATK-${a}`,'lgd');}
+      else{doTarget((pp,z,i)=>pp===dstP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{DS.buffs.push({targetP:pp,targetIdx:i,stat:'atk',amount:-a,until:dur});addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK-${a}`,'lgd');renderDuel();},'弱体化するモンスターを選択');}
+      break;
+    }
+    case 'def_up':{const a=parseInt(p.amt)||500;if(srcRef&&srcRef.zone==='monsters')DS.buffs.push({targetP:srcP,targetIdx:srcRef.idx,stat:'def',amount:a,until:'turn'});addLog(`「${srcCard.name}」DEF+${a}`,'lgs');break;}
+    case 'buff_all':{const a=parseInt(p.amt)||300;const dur=p.dur||'turn';for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push({targetP:srcP,targetIdx:i,stat:'atk',amount:a,until:dur});}addLog(`自軍全モンスターATK+${a}`,'lgs');break;}
+    case 'negate_attack':{DS.state='idle';DS.attackSrc=null;addLog(`「${srcCard.name}」の効果で攻撃を無効！`,'lgi');updateStatusBanner();break;}
+    case 'negate_effect':{doTarget((pp,z,i)=>DS.players[pp].field[z][i]!=null,(pp,z,i)=>{const fc=DS.players[pp].field[z][i];fc.effUsed=true;addLog(`「${fc.card.name}」の効果を無効にして破壊！`,'lgd');toGrave(pp,z,i);renderDuel();},'無効にするカードを選択');break;}
+    case 'search':{
+      const wh=p.what||'any';const fl=wh==='monster'?c=>c.type==='monster':wh==='spell'?c=>c.type==='magic':wh==='trap'?c=>c.type==='trap':()=>true;
+      const fi=src.deck.findIndex(fl);if(fi>=0){src.hand.push(src.deck.splice(fi,1)[0]);addLog(`「${srcCard.name}」の効果でデッキからサーチ！`,'lgs');}else{addLog('対象カードがデッキにありません','');}
+      break;
+    }
+    case 'special_summon':{
+      const from=p.from||'hand';const source=from==='grave'?src.grave:from==='deck'?src.deck:src.hand;
+      const fi=source.findIndex(c=>c.type==='monster');if(fi<0){addLog('特殊召喚できるモンスターがありません','');break;}
+      const slot=src.field.monsters.findIndex(x=>!x);if(slot===-1){addLog('モンスターゾーンが満杯です','');break;}
+      const [m]=source.splice(fi,1);src.field.monsters[slot]=mkFC(m,'atk',true);src.field.monsters[slot].justSummoned=false;
+      addLog(`「${srcCard.name}」の効果で「${m.name}」を特殊召喚！`,'lgs');break;
+    }
+    case 'banish':{doTarget((pp,z,i)=>{const fc=DS.players[pp].field[z][i];if(!fc)return false;const tgt2=p.target||'opp_monster';if(tgt2==='opp_monster')return pp===dstP&&z==='monsters';if(tgt2==='any')return z==='monsters';return false;},(pp,z,i)=>{const fc=DS.players[pp].field[z][i];DS.players[pp].removed.push(fc.card);DS.players[pp].field[z][i]=null;addLog(`「${fc.card.name}」を除外！`,'lgd');renderDuel();},'除外するカードを選択');break;}
+    case 'bounce':{
+      const tgt2=p.tgt||'opp_1';
+      if(tgt2==='opp_all'){for(let i=0;i<3;i++){if(dst.field.monsters[i]){dst.hand.push(dst.field.monsters[i].card);dst.field.monsters[i]=null;}if(dst.field.spells[i]){dst.hand.push(dst.field.spells[i].card);dst.field.spells[i]=null;}}addLog(`相手フィールドのカードを全て手札に戻した！`,'lgd');}
+      else{doTarget((pp,z,i)=>{const fc=DS.players[pp].field[z][i];if(!fc)return false;return tgt2==='any'?true:pp===dstP;},(pp,z,i)=>{const fc=DS.players[pp].field[z][i];DS.players[pp].hand.push(fc.card);DS.players[pp].field[z][i]=null;addLog(`「${fc.card.name}」を手札に戻した！`,'lgd');renderDuel();},'バウンス対象を選択');}
+      break;
+    }
+    case 'graveyard':{const fi=src.grave.findIndex(c=>p.tgt==='own_monster'?c.type==='monster':true);if(fi<0){addLog('墓地に対象カードがありません','');break;}if(p.tgt==='to_deck'){src.deck.unshift(src.grave.splice(fi,1)[0]);addLog(`墓地のカードをデッキに戻した`,'lgs');}else{src.hand.push(src.grave.splice(fi,1)[0]);addLog(`墓地から手札に回収！`,'lgs');}break;}
+    case 'token':{
+      const n=parseInt(p.n)||1;const ta=parseInt(p.atk)||0;const td=parseInt(p.def)||0;
+      const tc={id:'tok_'+Date.now(),name:'トークン',type:'monster',subtype:'effect',atk:ta,def:td,level:1,attr:'光',race:'戦士族',effects:[],defIcon:'⭐',custom:'トークン',image:null};
+      let placed=0;for(let i=0;i<3&&placed<n;i++){if(!src.field.monsters[i]){src.field.monsters[i]=mkFC(tc,'atk',true);src.field.monsters[i].justSummoned=false;placed++;}}
+      addLog(`トークン${placed}体を特殊召喚！`,'lgs');break;
+    }
+  }
+}
+
+/* ---- TARGETING ---- */
+function doTarget(filter,cb,label){
+  DS.state='target';DS.target={filter,cb,label};
+  addLog(`対象を選んでください: ${label}`,'lgi');updateStatusBanner();renderDuel();
+}
+function cancelTarget(){DS.state='idle';DS.target={filter:null,cb:null,label:''};updateStatusBanner();renderDuel();}
+
+/* ---- BUFFS ---- */
+function getEffAtk(p,idx){const fc=DS.players[p].field.monsters[idx];if(!fc)return 0;const base=fc.card.atk||0;const bon=DS.buffs.filter(b=>b.targetP===p&&b.targetIdx===idx&&b.stat==='atk').reduce((s,b)=>s+b.amount,0);return Math.max(0,base+bon);}
+function getEffDef(p,idx){const fc=DS.players[p].field.monsters[idx];if(!fc)return 0;const base=fc.card.def||0;const bon=DS.buffs.filter(b=>b.targetP===p&&b.targetIdx===idx&&b.stat==='def').reduce((s,b)=>s+b.amount,0);return Math.max(0,base+bon);}
+function clearTurnBuffs(){DS.buffs=DS.buffs.filter(b=>b.until==='perm');}
+
+/* ---- WIN ---- */
+function checkWin(){
+  for(let p=0;p<2;p++){if(DS.players[p].lp<=0){endDuel(opp(p));return;}}
+}
+function endDuel(winner){
+  DS.active=false;
+  const wn=DS.players[winner].name;
+  const ln=DS.players[opp(winner)].name;
+  document.getElementById('duel-end-txt').textContent=`🏆 ${wn} の勝利！`;
+  const statsEl=document.getElementById('duel-end-stats');
+  if(statsEl){
+    const p0=DS.players[0],p1=DS.players[1];
+    statsEl.innerHTML=`
+      <div style="font-family:'Cinzel',serif;font-size:11px;color:var(--gold);margin-bottom:6px;text-align:center">─ 対戦結果 ─</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;text-align:center">
+        <div style="color:rgba(220,190,120,.5);font-size:10px">${p0.name}</div>
+        <div style="color:rgba(220,190,120,.5);font-size:10px">${p1.name}</div>
+        <div style="font-family:'Cinzel',serif;font-size:16px;color:${p0.lp>0?'#4ae878':'#e84a3a'}">${p0.lp}</div>
+        <div style="font-family:'Cinzel',serif;font-size:16px;color:${p1.lp>0?'#4ae878':'#e84a3a'}">${p1.lp}</div>
+        <div style="font-size:9px;color:rgba(200,160,60,.5)">残りLP</div>
+        <div style="font-size:9px;color:rgba(200,160,60,.5)">残りLP</div>
+      </div>
+      <div style="border-top:1px solid rgba(200,160,60,.15);margin-top:8px;padding-top:6px;text-align:center;font-size:11px">
+        総ターン数: <span style="color:var(--gold);font-family:'Cinzel',serif">${DS.turnCount}</span>
+      </div>`;
+  }
+  document.getElementById('duel-end').classList.remove('hidden');
+  addLog(`${wn} の勝利！（${DS.turnCount}ターン）デュエル終了！`,'lgi');
+}
+function exitDuel(){
+  document.getElementById('duel-end').classList.add('hidden');
+  document.getElementById('duel-field').classList.add('hidden');
+  document.getElementById('duel-setup').classList.remove('hidden');
+  DS.active=false;
+}
+
+/* ---- GRAVE / ZONE VIEWER ---- */
+function viewGraveModal(p,type){
+  const pl=DS.players[p];if(!pl)return;
+  const src=type==='grave'?pl.grave:type==='extra'?pl.extra:pl.removed;
+  const labels={grave:'墓地',extra:'エクストラデッキ',removed:'除外ゾーン'};
+  const lbl=labels[type]||type;
+  const gv=document.getElementById('grave-viewer-modal');
+  const gt=document.getElementById('grave-viewer-title');
+  const gc=document.getElementById('grave-viewer-content');
+  if(!gv)return;
+  gt.textContent=`${pl.name} の${lbl}（${src.length}枚）`;
+  if(!src.length){gc.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text2);font-size:12px">カードなし</div>`;gv.classList.add('open');return;}
+  gc.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:4px 0">
+    ${src.slice().reverse().map(c=>{
+      const bg=c.type==='monster'?'var(--mf)':c.type==='magic'?'var(--sf)':'var(--tf)';
+      const bd=c.type==='monster'?'var(--gold)':c.type==='magic'?'#22c85a':'#c822e8';
+      const img=c.image?`<img src="${c.image}" style="width:100%;height:52px;object-fit:cover">`:`<div style="height:52px;display:flex;align-items:center;justify-content:center;font-size:22px">${c.defIcon||'⚔️'}</div>`;
+      return`<div style="width:60px;cursor:pointer" onclick="document.getElementById('grave-viewer-modal').classList.remove('open');if(S.cards.find(x=>x.id==='${c.id}'))showDetail('${c.id}')">
+        <div style="width:60px;height:84px;background:${bg};border:1.5px solid ${bd};border-radius:4px;overflow:hidden;position:relative">
+          ${img}
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.82);font-size:6px;color:#fff;text-align:center;padding:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:'Cinzel',serif">${esc(c.name)}</div>
+        </div>
+        ${c.type==='monster'?`<div style="font-size:9px;color:var(--text2);text-align:center;margin-top:2px">${c.atk||0}/${c.def||0}</div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
+  gv.classList.add('open');
+}
+
+/* ---- RENDER ---- */
+function renderDuel(){
+  if(!DS.players[0]||!DS.players[1])return;
+  updateBars();renderPhaseSteps();renderAllZones();renderHands();renderSides();updatePhaseBtn();
+}
+
+function flashLP(color){
+  const el=document.getElementById('lp-flash');
+  if(!el)return;
+  el.style.background=color;
+  el.style.opacity='0.28';
+  setTimeout(()=>{el.style.opacity='0';},200);
+}
+
+function updateBars(){
+  const l0=DS.players[0].lp,l1=DS.players[1].lp;
+  const setEl=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  setEl('p1-lp',l0); setEl('p2-lp',l1);
+  const b1=document.getElementById('p1-lpb'),b2=document.getElementById('p2-lpb');
+  if(b1)b1.style.width=Math.min(100,l0/40)+'%';
+  if(b2)b2.style.width=Math.min(100,l1/40)+'%';
+  setEl('p1-name-disp',(DS.turn===0?'▶ ':'')+DS.players[0].name);
+  setEl('p2-name-disp',(DS.turn===1?'▶ ':'')+DS.players[1].name);
+  setEl('p1-hc',DS.players[0].hand.length);
+  setEl('p1-dc',DS.players[0].deck.length);
+  setEl('p1-gc',DS.players[0].grave.length);
+  setEl('p2-dc',DS.players[1].deck.length);
+  setEl('p2-gc',DS.players[1].grave.length);
+  setEl('p2-rmc-bar',(DS.players[1].removed||[]).length);
+  setEl('turn-ind',DS.players[DS.turn].name+'のターン');
+}
+
+function renderPhaseSteps(){
+  const curI=PHASE_LIST.indexOf(DS.phase);
+  document.getElementById('phase-steps').innerHTML=PHASE_LIST.map((ph,i)=>
+    `<div class="phase-step${i===curI?' cur':i<curI?' done':''}">${PHASE_NAMES[ph]}</div>`
+  ).join('');
+}
+
+function doSurrender(){
+  if(!DS.active)return;
+  if(!confirm(`${DS.players[DS.turn].name} が降参しますか？`))return;
+  addLog(`${DS.players[DS.turn].name} が降参！`,'lgd');
+  endDuel(opp(DS.turn));
+}
+
+function updatePhaseBtn(){
+  const btn=document.getElementById('phase-btn');
+  if(!btn)return;
+  if(DS.state==='tribute'){btn.textContent='✕ キャンセル';btn.style.background='rgba(180,60,20,.7)';return;}
+  if(DS.state==='attack'){btn.textContent='✕ 攻撃キャンセル';btn.style.background='rgba(180,60,20,.7)';return;}
+  if(DS.state==='target'){btn.textContent='✕ キャンセル';btn.style.background='rgba(180,60,20,.7)';return;}
+  btn.style.background='';
+  const isFirst=DS.firstTurn&&DS.turn===0;
+  const lbl={
+    draw:'スタンバイへ ▶',
+    standby:'メイン1へ ▶',
+    main1: isFirst ? 'エンドフェイズへ ▶' : 'バトルフェイズへ ▶',
+    battle:'メイン2へ ▶',
+    main2:'エンドフェイズへ ▶',
+    end:'ターンを終了する ▶'
+  };
+  btn.textContent=lbl[DS.phase]||'次へ ▶';
+}
+
+function renderAllZones(){
+  const isTgt=DS.state==='target';const isAtk=DS.state==='attack';const isTrib=DS.state==='tribute';
+  ['p1','p2'].forEach((pid,pi)=>{
+    const p=pi,pl=DS.players[p];
+    const ap=DS.turn,isAP=p===ap;
+    const isBattle=DS.phase==='battle';const isMain=DS.phase==='main1'||DS.phase==='main2';
+    const oppHasM=DS.players[opp(p)].field.monsters.some(x=>x);
+
+    // Monster row
+    let mHTML='';
+    for(let i=0;i<3;i++){
+      const fc=pl.field.monsters[i];
+      const isSel=DS.selected&&DS.selected.p===p&&DS.selected.zone==='monsters'&&DS.selected.idx===i;
+      const isTribSel=isTrib&&DS.tribute.selected.includes(i);
+      const canTrib=isTrib&&isAP&&fc!=null;
+      const canTgt=isTgt&&DS.target.filter&&DS.target.filter(p,'monsters',i);
+      const isAtkTgt=isAtk&&p===opp(DS.attackSrc.p)&&fc&&fc.faceUp;
+      let cls='zone-slot'+(fc?' has-card':'')+(isSel||isTribSel?' sel-slot':'')+(canTgt||isAtkTgt?' can-target':'');
+      mHTML+=`<div class="${cls}" onclick="zoneClick(${p},'monsters',${i},event)" onmouseenter="if(DS.players[${p}]?.field.monsters[${i}])showHoverPopupCard(event,DS.players[${p}].field.monsters[${i}].card)" onmouseleave="hideHoverPopup();clearLongPress()" onmousedown="startLongPress(event,${p},${i},'monsters')" ontouchstart="startLongPress(event,${p},${i},'monsters')" onmouseup="clearLongPress()" ontouchend="clearLongPress()">${fc?renderMiniCard(fc,p,'monsters',i):'<span class="zone-lbl">M</span>'}</div>`;
+    }
+    // Direct attack area
+    if(isAtk&&p===opp(DS.attackSrc.p)&&!oppHasM){
+      mHTML=`<div class="zone-slot can-target" style="width:270px;font-size:12px;color:#e86aff;text-align:center;font-family:'Cinzel',serif;letter-spacing:1px" onclick="directClick(${p},event)">⚔ ダイレクトアタック！</div>`;
+    }
+    document.getElementById(`${pid}-mn`).innerHTML=mHTML;
+
+    // S/T row
+    let stHTML='';
+    for(let i=0;i<3;i++){
+      const fc=pl.field.spells[i];
+      const canTgt=isTgt&&DS.target.filter&&DS.target.filter(p,'spells',i);
+      let cls='zone-slot'+(fc?' has-card':'')+(canTgt?' can-target':'');
+      stHTML+=`<div class="${cls}" onclick="zoneClick(${p},'spells',${i},event)" onmouseenter="if(DS.players[${p}]?.field.spells[${i}]?.faceUp)showHoverPopupCard(event,DS.players[${p}].field.spells[${i}].card)" onmouseleave="hideHoverPopup();clearLongPress()" onmousedown="startLongPress(event,${p},${i},'spells')" ontouchstart="startLongPress(event,${p},${i},'spells')" onmouseup="clearLongPress()" ontouchend="clearLongPress()">${fc?renderMiniCard(fc,p,'spells',i):'<span class="zone-lbl">S/T</span>'}</div>`;
+    }
+    document.getElementById(`${pid}-st`).innerHTML=stHTML;
+  });
+}
+
+function renderMiniCard(fc,p,zone,idx){
+  const W=74,H=104;
+  if(!fc.faceUp){
+    const rot=fc.pos==='def'&&zone==='monsters'?'transform:rotate(90deg);transform-origin:center center;':'';
+    return`<div style="width:${W}px;height:${H}px;${rot}background:linear-gradient(135deg,#0e0e3a,#1e0e50,#0e0e3a);border-radius:4px;border:1.5px solid rgba(120,80,200,.5);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:inset 0 1px 4px rgba(0,0,0,.6)">🔮</div>`;
+  }
+  const c=fc.card;
+  const bg=c.type==='monster'?(c.subtype==='normal'?'var(--nf)':'var(--mf)'):c.type==='magic'?'var(--sf)':'var(--tf)';
+  const bd=c.type==='monster'?'var(--gold)':c.type==='magic'?'#22c85a':'#c822e8';
+  const imgC=c.image
+    ?`<img src="${c.image}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`
+    :`<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);font-size:28px">${c.defIcon||'⚔️'}</span>`;
+  const nameLbl=`<div style="position:absolute;top:0;left:0;right:0;background:rgba(0,0,0,.75);font-family:'Cinzel',serif;font-size:6px;color:#fff;text-align:center;padding:2px 1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(c.name)}</div>`;
+  const defTag=fc.pos==='def'&&zone==='monsters'?`<div style="position:absolute;top:13px;left:1px;background:rgba(0,60,200,.88);font-size:6px;color:#fff;padding:1px 3px;border-radius:2px;font-weight:700">DEF</div>`:'';
+  const atkTag=fc.attacked?`<div style="position:absolute;top:13px;right:1px;font-size:9px">⚡</div>`:'';
+  const newTag=(fc.justSummoned&&zone==='monsters'&&fc.faceUp)?`<div style="position:absolute;bottom:18px;right:1px;background:rgba(200,163,39,.92);font-size:6px;color:#000;padding:1px 3px;border-radius:2px;font-weight:700">NEW</div>`:'';
+  const effTag=(fc.effUsed&&c.effects?.length)?`<div style="position:absolute;top:13px;right:1px;background:rgba(150,0,0,.88);font-size:6px;color:#fff;padding:1px 3px;border-radius:2px">使用済</div>`:'';
+  const triSel=DS.state==='tribute'&&DS.tribute.selected.includes(idx)&&p===DS.turn;
+  const glow=triSel?'box-shadow:0 0 14px rgba(255,100,50,.95),0 2px 8px rgba(0,0,0,.5);':'box-shadow:0 2px 8px rgba(0,0,0,.5);';
+  const statBar=zone==='monsters'
+    ?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.88);font-family:'Cinzel',serif;font-size:7px;color:#fff;text-align:center;padding:2px 0">${getEffAtk(p,idx)} / ${getEffDef(p,idx)}</div>`
+    :`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.75);font-size:6px;color:rgba(255,255,255,.65);text-align:center;padding:2px">${c.type==='magic'?'魔法':'罠'}</div>`;
+  return`<div style="position:relative;width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1.5px solid ${bd};background:${bg};${glow}">${imgC}${nameLbl}${defTag}${atkTag}${newTag}${effTag}${statBar}</div>`;
+}
+
+function renderHands(){
+  // P2 hand — small face-down backs with count label
+  const p2el=document.getElementById('p2-hand');
+  const p2cnt=DS.players[1].hand.length;
+  p2el.innerHTML=`<div style="display:flex;align-items:center;gap:4px;padding:2px 4px">
+    ${Array.from({length:p2cnt},(_,i)=>`<div class="hand-card-back" data-lp-p="1" data-lp-i="${i}" onmousedown="startLongPress(event,1,${i},'hand')" ontouchstart="startLongPress(event,1,${i},'hand')" onmouseup="clearLongPress()" onmouseleave="clearLongPress()" ontouchend="clearLongPress()"></div>`).join('')}
+    <div style="font-family:'Cinzel',serif;font-size:10px;color:rgba(220,190,120,.5);margin-left:4px">${p2cnt}枚</div>
+  </div>`;
+
+  // P1 hand — large face-up cards with long press
+  const p1el=document.getElementById('p1-hand');
+  const pl=DS.players[0];
+  const HW=68,HH=98;
+  p1el.innerHTML=pl.hand.map((c,i)=>{
+    const bg=c.type==='monster'?'var(--mf)':c.type==='magic'?'var(--sf)':'var(--tf)';
+    const bd=c.type==='monster'?'var(--gold)':c.type==='magic'?'#22c85a':'#c822e8';
+    const img=c.image
+      ?`<img src="${c.image}" style="width:100%;height:${HH-26}px;object-fit:cover">`
+      :`<div style="height:${HH-26}px;display:flex;align-items:center;justify-content:center;font-size:26px">${c.defIcon||'⚔️'}</div>`;
+    return`<div class="hand-card" id="hc-0-${i}"
+        onclick="handClick(0,${i},event)"
+        onmouseenter="showHoverPopupCard(event,DS.players[0]?.hand[${i}])"
+        onmouseleave="hideHoverPopup();clearLongPress()"
+        onmousedown="startLongPress(event,0,${i},'hand')"
+        ontouchstart="startLongPress(event,0,${i},'hand')"
+        onmouseup="clearLongPress()"
+        ontouchend="clearLongPress()">
+      <div style="width:${HW}px;height:${HH}px;background:${bg};border:1.5px solid ${bd};border-radius:5px;overflow:hidden;position:relative;box-shadow:0 3px 10px rgba(0,0,0,.6)">
+        ${img}
+        <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.82);font-family:'Cinzel',serif;font-size:7px;color:#fff;text-align:center;padding:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${esc(c.name)}</div>
+        ${c.type==='monster'?`<div style="position:absolute;top:2px;right:2px;font-size:7px;color:var(--gold2);font-family:'Cinzel',serif;font-weight:700;background:rgba(0,0,0,.5);padding:0 2px;border-radius:2px">${c.atk||0}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderSides(){
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  [0,1].forEach(p=>{
+    const pid=p===0?'p1':'p2';
+    const pl=DS.players[p];
+    s(`${pid}-dkc`,pl.deck.length);
+    s(`${pid}-gyc`,pl.grave.length);
+    s(`${pid}-exc`,(pl.extra||[]).length);
+    s(`${pid}-rmc`,(pl.removed||[]).length);
+    if(p===1)s('p2-rmc-bar',(pl.removed||[]).length);
+  });
+}
+
+function updateStatusBanner(){
+  const el=document.getElementById('d-status');
+  if(DS.state==='tribute'){
+    el.className='status-banner trib-banner';
+    el.innerHTML=`リリース選択: ${DS.tribute.selected.length}/${DS.tribute.needed}体 <button onclick="cancelTribute()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(255,100,50,.5);background:none;color:#e87040;cursor:pointer;font-size:10px">キャンセル</button>`;
+    el.classList.remove('hidden');
+  } else if(DS.state==='target'){
+    el.className='status-banner tgt-banner';
+    el.innerHTML=`${esc(DS.target.label)} <button onclick="cancelTarget()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(50,200,100,.4);background:none;color:#4ae878;cursor:pointer;font-size:10px">キャンセル</button>`;
+    el.classList.remove('hidden');
+  } else if(DS.state==='attack'){
+    const {p,idx}=DS.attackSrc;
+    const name=DS.players[p].field.monsters[idx]?.card.name||'';
+    el.className='status-banner atk-banner';
+    el.innerHTML=`⚔ 「${esc(name)}」で攻撃！対象を選択 <button onclick="cancelAttack()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(200,50,200,.4);background:none;color:#e86aff;cursor:pointer;font-size:10px">キャンセル</button>`;
+    el.classList.remove('hidden');
+  } else {
+    el.classList.add('hidden');
+  }
+}
+
+function addLog(msg,cls){
+  const el=document.getElementById('duel-log');if(!el)return;
+  const d=document.createElement('div');
+  d.className='log-entry'+(cls?' '+cls:'');d.textContent=msg;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+/* ===========================
+   DUEL MODE UI
+=========================== */
+function setDuelMode(mode){
+  document.getElementById('setup-local').classList.toggle('hidden', mode!=='local');
+  document.getElementById('setup-online').classList.toggle('hidden', mode!=='online');
+  document.getElementById('mode-local-btn').className='btn '+(mode==='local'?'btn-primary':'btn-outline');
+  document.getElementById('mode-online-btn').className='btn '+(mode==='online'?'btn-primary':'btn-outline');
+  if(mode==='online') initOnlineMode();
+}
+
+/* ===========================
+   FIREBASE ONLINE PLAY
+=========================== */
+const FB={db:null,roomRef:null,roomId:null,myRole:null,myName:null,myDeckId:null,unsubscribe:null};
+
+function initOnlineMode(){
+  const cfg=loadFBConfig();
+  if(cfg){
+    document.getElementById('fb-not-configured').classList.add('hidden');
+    document.getElementById('fb-configured').classList.remove('hidden');
+    populateOnlineDeckSel();
+    if(!FB.db) connectFirebase(cfg);
+  } else {
+    document.getElementById('fb-not-configured').classList.remove('hidden');
+    document.getElementById('fb-configured').classList.add('hidden');
+  }
+}
+
+function loadFBConfig(){
+  try{const r=localStorage.getItem('fb_cfg');return r?JSON.parse(r):null;}catch(e){return null;}
+}
+
+function saveFirebaseConfig(){
+  const rawUrl = document.getElementById('fb-dburl').value.trim();
+  // Sanitize: strip trailing slash and any path after .app
+  const cleanUrl = rawUrl.replace(/\/+$/, '').split('/').slice(0,3).join('/');
+  const cfg={
+    apiKey:document.getElementById('fb-apikey').value.trim(),
+    authDomain:document.getElementById('fb-authdomain').value.trim(),
+    databaseURL:cleanUrl,
+    projectId:document.getElementById('fb-projectid').value.trim(),
+  };
+  if(!cfg.apiKey||!cfg.databaseURL){toast('APIキーとDatabase URLは必須です','error');return;}
+  if(!cfg.databaseURL.startsWith('https://')){toast('Database URLは https:// で始まる必要があります','error');return;}
+  try{localStorage.setItem('fb_cfg',JSON.stringify(cfg));}catch(e){}
+  // Show what URL we're using
+  document.getElementById('fb-dburl').value = cleanUrl;
+  connectFirebase(cfg);
+}
+
+function resetFirebaseConfig(){
+  try{localStorage.removeItem('fb_cfg');}catch(e){}
+  // Delete all existing Firebase apps so next init is clean
+  try{
+    if(window.firebase&&firebase.apps){
+      firebase.apps.forEach(app=>app.delete().catch(()=>{}));
+    }
+  }catch(e){}
+  FB.db=null;
+  document.getElementById('fb-not-configured').classList.remove('hidden');
+  document.getElementById('fb-configured').classList.add('hidden');
+  toast('Firebase設定をリセットしました','success');
+}
+
+function connectFirebase(cfg){
+  // Always delete existing apps before re-init to avoid stale state
+  const doInit = () => {
+    try{
+      if(window.firebase&&firebase.apps&&firebase.apps.length){
+        Promise.all(firebase.apps.map(a=>a.delete().catch(()=>{}))).then(()=>finalizeConnect(cfg));
+      } else {
+        finalizeConnect(cfg);
+      }
+    }catch(e){ finalizeConnect(cfg); }
+  };
+
+  if(window.firebase&&window.firebase.database){ doInit(); return; }
+
+  const s1=document.createElement('script');
+  s1.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+  s1.onerror=()=>toast('Firebaseスクリプトの読み込みに失敗しました。インターネット接続を確認してください','error');
+  s1.onload=()=>{
+    const s2=document.createElement('script');
+    s2.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js';
+    s2.onerror=()=>toast('Firebaseデータベーススクリプトの読み込みに失敗しました','error');
+    s2.onload=()=>doInit();
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+
+function finalizeConnect(cfg){
+  try{
+    // Ensure URL has no trailing slash or subpath
+    const safeUrl = cfg.databaseURL.replace(/\/+$/, '');
+    const safeCfg = {...cfg, databaseURL: safeUrl};
+
+    firebase.initializeApp(safeCfg);
+    FB.db = firebase.database();
+
+    // Test connection with a small read
+    FB.db.ref('.info/connected').once('value')
+      .then(()=>{
+        toast('✅ Firebaseに接続しました！','success');
+        document.getElementById('fb-not-configured').classList.add('hidden');
+        document.getElementById('fb-configured').classList.remove('hidden');
+        populateOnlineDeckSel();
+      })
+      .catch(err=>{
+        toast('接続テスト失敗: '+err.message,'error');
+      });
+  }catch(e){
+    let msg = e.message;
+    if(msg.includes('already exists')) msg = '設定を変更するには一度「Firebase設定をリセット」してから再入力してください';
+    if(msg.includes('Database URL')) msg = 'Database URLが正しくありません。https://で始まるURLを入力してください';
+    toast('Firebase接続エラー: '+msg,'error');
+    console.error('Firebase error:', e);
+  }
+}
+
+function populateOnlineDeckSel(){
+  const s=document.getElementById('online-deck-sel');
+  if(!s)return;
+  s.innerHTML=S.decks.length
+    ?S.decks.map(d=>`<option value="${d.id}">${esc(d.name)}</option>`).join('')
+    :'<option value="">（デッキなし）</option>';
+}
+
+function genRoomId(){return Math.random().toString(36).slice(2,8).toUpperCase();}
+
+function createOnlineRoom(){
+  if(!FB.db){toast('Firebase未接続','error');return;}
+  const name=document.getElementById('online-name').value.trim()||'Player';
+  const deckId=document.getElementById('online-deck-sel').value;
+  const deck=S.decks.find(x=>x.id===deckId);
+  if(!deck){toast('デッキを選択してください','error');return;}
+  if((deck.main||[]).length<20){toast('デッキが20枚未満です','error');return;}
+  const roomId=genRoomId();
+  FB.roomId=roomId;FB.myRole='p1';FB.myName=name;FB.myDeckId=deckId;
+  const deckData=exportDeckForOnline(deck);
+  FB.roomRef=FB.db.ref('rooms/'+roomId);
+  FB.roomRef.set({
+    status:'waiting',
+    p1:{name,deck:deckData,ready:false},
+    p2:null,
+    gameState:null,
+    actions:[],
+    createdAt:Date.now()
+  }).then(()=>{
+    document.getElementById('room-id-disp').textContent=roomId;
+    document.getElementById('room-waiting').classList.remove('hidden');
+    document.getElementById('join-area').classList.add('hidden');
+    listenRoom();
+    toast(`ルーム ${roomId} を作成しました！`,'success');
+  }).catch(e=>toast('ルーム作成エラー: '+e.message,'error'));
+}
+
+function joinOnlineRoom(){
+  if(!FB.db){toast('Firebase未接続','error');return;}
+  const roomId=document.getElementById('room-id-in').value.trim().toUpperCase();
+  if(roomId.length!==6){toast('ルームIDは6文字です','error');return;}
+  const name=document.getElementById('online-name').value.trim()||'Player';
+  const deckId=document.getElementById('online-deck-sel').value;
+  const deck=S.decks.find(x=>x.id===deckId);
+  if(!deck){toast('デッキを選択してください','error');return;}
+  if((deck.main||[]).length<20){toast('デッキが20枚未満です','error');return;}
+  FB.roomId=roomId;FB.myRole='p2';FB.myName=name;FB.myDeckId=deckId;
+  FB.roomRef=FB.db.ref('rooms/'+roomId);
+  FB.roomRef.once('value').then(snap=>{
+    const room=snap.val();
+    if(!room){toast('ルームが見つかりません','error');return;}
+    if(room.status!=='waiting'){toast('このルームはすでに対戦中です','error');return;}
+    const deckData=exportDeckForOnline(deck);
+    FB.roomRef.update({
+      status:'ready',
+      p2:{name,deck:deckData,ready:false}
+    }).then(()=>{
+      listenRoom();
+      toast(`ルーム ${roomId} に参加しました！`,'success');
+    });
+  }).catch(e=>toast('参加エラー: '+e.message,'error'));
+}
+
+function cancelRoom(){
+  if(FB.roomRef)FB.roomRef.remove();
+  if(FB.unsubscribe)FB.unsubscribe();
+  FB.roomRef=null;FB.roomId=null;
+  document.getElementById('room-waiting').classList.add('hidden');
+}
+
+function listenRoom(){
+  if(FB.unsubscribe)FB.unsubscribe();
+  const ref=FB.roomRef;
+  const handler=ref.on('value',snap=>{
+    const room=snap.val();
+    if(!room)return;
+    if(room.status==='ready'&&FB.myRole==='p1'){
+      document.getElementById('waiting-status').textContent=`✅ ${room.p2?.name||'Player 2'} が参加！対戦開始します...`;
+      setTimeout(()=>startOnlineDuel(room),1500);
+    }
+    if(room.status==='started'&&room.gameState){
+      syncOnlineState(room.gameState,room.actions||[]);
+    }
+  });
+  FB.unsubscribe=()=>ref.off('value',handler);
+}
+
+function exportDeckForOnline(deck){
+  const resolve=ids=>(ids||[]).map(id=>{
+    const c=S.cards.find(x=>x.id===id);
+    return c?{...c,image:null}:null;
+  }).filter(Boolean);
+  return{main:resolve(deck.main),extra:resolve(deck.extra)};
+}
+
+function startOnlineDuel(room){
+  document.getElementById('room-waiting').classList.add('hidden');
+  const p1deck=room.p1.deck;const p2deck=room.p2.deck;
+  DS.active=true;DS.turn=0;DS.turnCount=1;DS.firstTurn=true;
+  DS.phase='main1';DS.state='idle';DS.buffs=[];DS.log=[];
+  DS.players[0]=mkPlayerFromDeckData(room.p1.name,p1deck);
+  DS.players[1]=mkPlayerFromDeckData(room.p2.name,p2deck);
+  drawCard(0,5);drawCard(1,5);
+  document.getElementById('duel-setup').classList.add('hidden');
+  document.getElementById('duel-field').classList.remove('hidden');
+  document.getElementById('duel-log').innerHTML='';
+  addLog(`⚔ オンラインデュエル開始！ ${room.p1.name} vs ${room.p2.name}`,'lgi');
+  renderDuel();
+  if(FB.roomRef)FB.roomRef.update({status:'started'});
+}
+
+function mkPlayerFromDeckData(name,deckData){
+  const main=shuffle([...(deckData.main||[])]);
+  const extra=[...(deckData.extra||[])];
+  return{name,lp:4000,hand:[],deck:main,grave:[],extra,removed:[],
+    field:{monsters:[null,null,null],spells:[null,null,null]},
+    summonedMain:false,attackedIdxs:new Set()};
+}
+
+function syncOnlineState(gs,actions){/* reserved for full state sync */}
+
+function pushAction(action){
+  if(!FB.roomRef)return;
+  FB.roomRef.child('actions').push({...action,by:FB.myRole,at:Date.now()});
+}
+
+
+/* ===========================
+   HOME SCREEN
+=========================== */
+function renderHome() {
+  // Update stats
+  const cc = document.getElementById('home-card-cnt');
+  const dc = document.getElementById('home-deck-cnt');
+  if (cc) cc.textContent = S.cards.length;
+  if (dc) dc.textContent = S.decks.length;
+  // Recent cards (last 6 created)
+  const rc = document.getElementById('home-recent-cards');
+  if (!rc) return;
+  const recent = [...S.cards].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,8);
+  if (!recent.length) {
+    rc.innerHTML = `<div style="color:var(--text2);font-size:11px;padding:8px 0">カードがまだありません。まず作ってみよう！</div>`;
+    return;
+  }
+  const W=68, H=Math.round(W*320/220);
+  rc.innerHTML = recent.map(c =>
+    `<div style="flex-shrink:0;cursor:pointer" onclick="showDetail('${c.id}')"
+      onmouseenter="showHoverPopup(event,'${c.id}')"
+      onmouseleave="hideHoverPopup()">
+      ${scaledCard(c,W,H)}
+    </div>`
+  ).join('');
+}
+
+/* ===========================
+   CARD HOVER POPUP
+=========================== */
+let HoverTimer = null;
+function getPopup(){ return document.getElementById('card-hover-popup'); }
+
+function showHoverPopup(ev, cardId) {
+  const c = S.cards.find(x => x.id === cardId);
+  if (!c) return;
+  clearTimeout(HoverTimer);
+  HoverTimer = setTimeout(() => {
+    populateHoverPopup(c);
+    positionHoverPopup(ev);
+    getPopup().classList.add('visible');
+  }, 120);
+}
+
+function showHoverPopupCard(ev, card) {
+  if (!card) return;
+  clearTimeout(HoverTimer);
+  HoverTimer = setTimeout(() => {
+    populateHoverPopup(card);
+    positionHoverPopup(ev);
+    getPopup().classList.add('visible');
+  }, 180);
+}
+
+function hideHoverPopup() {
+  clearTimeout(HoverTimer);
+  getPopup().classList.remove('visible');
+}
+
+function populateHoverPopup(c) {
+  const isM = c.type === 'monster';
+  // Image
+  const imgEl = document.getElementById('chp-img');
+  imgEl.innerHTML = c.image
+    ? `<img src="${c.image}" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;background:${isM?'var(--mf)':c.type==='magic'?'var(--sf)':'var(--tf)'}">${c.defIcon||'⚔️'}</div>`;
+  // Stars
+  document.getElementById('chp-stars').textContent = isM ? '★'.repeat(Math.min(c.level||1,12)) : '';
+  // Name
+  document.getElementById('chp-name').textContent = c.name || '（無名）';
+  // Type line
+  const typeLine = isM
+    ? `【${c.race||''}／${{effect:'効果',normal:'通常',ritual:'儀式',fusion:'融合',synchro:'シンクロ',xyz:'エクシーズ',link:'リンク'}[c.subtype]||'効果'}】 ${c.attr||''}`
+    : ({normal:'通常',continuous:'永続',quick:'速攻',counter:'カウンター'}[c.subtype]||'') + ({magic:'魔法',trap:'罠'}[c.type]||'') + 'カード';
+  document.getElementById('chp-type').textContent = typeLine;
+  // Stats
+  const statsRow = document.getElementById('chp-stats-row');
+  if (isM) {
+    statsRow.innerHTML = `
+      <div><span class="chp-stat-lbl">ATK</span><span class="chp-stat-val">${c.atk||0}</span></div>
+      <div><span class="chp-stat-lbl">DEF</span><span class="chp-stat-val">${c.def||0}</span></div>
+      <div><span class="chp-stat-lbl">Lv</span><span class="chp-stat-val">${c.level||1}</span></div>`;
+  } else {
+    statsRow.innerHTML = '';
+  }
+  // Rank badge
+  const rankEl = document.getElementById('chp-rank');
+  const rMap = {normal:['N','rgba(80,80,80,.8)','#ccc'],rare:['R','rgba(20,60,200,.8)','#9ac'],superrare:['SR','rgba(140,20,180,.8)','#daf'],legend:['LG','rgba(160,120,0,.85)','#fc5']};
+  const rStyle = rMap[c.rank||'normal']||rMap.normal;
+  rankEl.textContent = rStyle[0];
+  rankEl.style.background = rStyle[1];
+  rankEl.style.color = rStyle[2];
+  // Effect text
+  const effParts = [];
+  if (c.effects?.length) effParts.push(...c.effects.map(e => e.text));
+  if (c.custom) effParts.push(c.custom);
+  const effText = effParts.join('\n') || (isM && c.subtype==='normal' ? c.custom||'通常モンスター' : '効果なし');
+  document.getElementById('chp-effect').textContent = effText;
+}
+
+function positionHoverPopup(ev) {
+  const W = 280, H = 300;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let x = ev.clientX + 16;
+  let y = ev.clientY - 60;
+  if (x + W > vw - 8) x = ev.clientX - W - 16;
+  if (y + H > vh - 8) y = vh - H - 8;
+  if (y < 8) y = 8;
+  getPopup().style.left = x + 'px';
+  getPopup().style.top  = y + 'px';
+}
+
+document.addEventListener('mousemove', function(ev) {
+  if (getPopup().classList.contains('visible')) {
+    positionHoverPopup(ev);
+  }
+});
+
+/* ===========================
+   ESC KEY HANDLER
+=========================== */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Escape')return;
+  const modals=['eff-modal','detail-modal','share-modal','import-modal','grave-viewer-modal'];
+  for(const id of modals){
+    const el=document.getElementById(id);
+    if(el&&el.classList.contains('open')){el.classList.remove('open');return;}
+  }
+  if(DS.active){
+    const menu=document.getElementById('action-menu');
+    if(menu&&!menu.classList.contains('hidden')){hideActions();return;}
+    if(DS.state==='tribute'){cancelTribute();return;}
+    if(DS.state==='attack'){cancelAttack();return;}
+    if(DS.state==='target'){cancelTarget();return;}
+    if(DS.state==='idle'){
+      if(confirm('デュエルを終了しますか？')){exitDuel();showSec('duel');}
+    }
+  }
+});
+
+/* ===========================
+   LONG PRESS — CARD DETAIL
+=========================== */
+const LP={timer:null,triggered:false};
+
+function startLongPress(ev,p,idx,zone){
+  clearLongPress();
+  LP.triggered=false;
+  const target=ev.currentTarget||ev.target;
+  LP.timer=setTimeout(()=>{
+    LP.triggered=true;
+    // visual pulse
+    target.classList.add('long-pressing');
+    setTimeout(()=>target.classList.remove('long-pressing'),300);
+    showCardDetailFromField(p,idx,zone);
+  },400);
+}
+
+function clearLongPress(){
+  if(LP.timer){clearTimeout(LP.timer);LP.timer=null;}
+}
+
+function showCardDetailFromField(p,idx,zone){
+  if(!DS.players[p])return;
+  let card=null;
+  if(zone==='hand'){
+    card=DS.players[p].hand[idx];
+  } else {
+    const fc=DS.players[p]?.field[zone]?.[idx];
+    if(fc)card=fc.card;
+  }
+  if(!card)return;
+  const known=S.cards.find(x=>x.id===card.id);
+  if(known){showDetail(card.id);}
+  else{
+    const info=card.type==='monster'?`ATK/${card.atk||0} / DEF/${card.def||0}  Lv${card.level||1}`:`${card.type==='magic'?'魔法':'罠'}カード`;
+    toast(`【${esc(card.name)}】 ${info}`,'success');
+  }
+}
+
+document.addEventListener('click',function(e){
+  const menu=document.getElementById('action-menu');
+  if(menu&&!menu.classList.contains('hidden')&&!menu.contains(e.target)){hideActions();if(DS.active)renderDuel();}
+});
+
+init();
+</script>
+</body>
+</html>

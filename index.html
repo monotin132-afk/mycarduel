@@ -2634,10 +2634,13 @@ function startDuel(){
 /* ---- PHASE ENGINE ---- */
 function advancePhase(){
   hideActions();
-  if(DS.state==='tribute'){cancelTribute();return;}
-  if(DS.state==='attack'){cancelAttack();return;}
-  if(DS.state==='target'){cancelTarget();return;}
-  if(DS.isOnline&&DS.turn!==DS.viewP){toast('相手のターンです','error');return;}
+  // Cancel states only on local initiation, not remote
+  if(!DS.applyingRemote){
+    if(DS.state==='tribute'){cancelTribute();return;}
+    if(DS.state==='attack'){cancelAttack();return;}
+    if(DS.state==='target'){cancelTarget();return;}
+    if(DS.isOnline&&DS.turn!==DS.viewP){toast('相手のターンです','error');return;}
+  }
   pushAction('advancePhase',{});
 
   const cur=PHASE_LIST.indexOf(DS.phase);
@@ -2940,8 +2943,8 @@ function doAttack(targetP,targetIdx){
 function zoneClick(p,zone,idx,ev){
   if(ev)ev.stopPropagation();
   if(LP.triggered){LP.triggered=false;return;}
-  // Online: only act when it's your turn
-  if(DS.isOnline&&DS.turn!==DS.viewP&&DS.state==='idle')return;
+  // Online: block only local user actions, not remote-applied actions
+  if(DS.isOnline&&!DS.applyingRemote&&DS.turn!==DS.viewP&&DS.state==='idle')return;
   const fc=DS.players[p].field[zone][idx];
   const ap=DS.turn;
 
@@ -2956,6 +2959,7 @@ function zoneClick(p,zone,idx,ev){
       const cb=DS.target.cb;
       DS.state='idle';DS.target={filter:null,cb:null,label:''};
       updateStatusBanner();
+      if(!DS.applyingRemote) pushAction('targetResult',{p,zone,idx});
       cb(p,zone,idx);
     }
     return;
@@ -2970,15 +2974,15 @@ function zoneClick(p,zone,idx,ev){
 
 function directClick(p,ev){
   if(ev)ev.stopPropagation();
-  if(DS.isOnline&&DS.turn!==DS.viewP)return;
+  if(DS.isOnline&&!DS.applyingRemote&&DS.turn!==DS.viewP)return;
   if(DS.state==='attack'){const{p:ap}=DS.attackSrc;if(p===opp(ap))doAttack(p,-1);}
 }
 
 function handClick(p,idx,ev){
   if(ev)ev.stopPropagation();
   if(LP.triggered){LP.triggered=false;return;}
-  // In online mode, only allow your own hand on your turn
-  if(DS.isOnline){
+  // Online: only local user's hand during their turn
+  if(DS.isOnline&&!DS.applyingRemote){
     if(p!==DS.viewP)return;
     if(DS.turn!==DS.viewP&&DS.state==='idle')return;
   }
@@ -3641,6 +3645,7 @@ function createOnlineRoom(){
   const deckData=exportDeckForOnline(deck);
   FB.roomRef=FB.db.ref('rooms/'+roomId);
   FB.roomRef.set({
+    id: roomId,
     status:'waiting',
     p1:{name,deck:deckData,ready:false},
     p2:null,
@@ -3697,25 +3702,27 @@ function listenRoom(){
   const handler=ref.on('value',snap=>{
     const room=snap.val();
     if(!room)return;
+    // Attach room ID so startOnlineDuel can use it as shuffle seed
+    if(!room.id) room.id = FB.roomId;
 
-    // P1: detect P2 joined → start
+    // P1: P2 joined → immediately start and mark as started
     if(room.status==='ready'&&FB.myRole==='p1'&&!started){
       started=true;
-      const el=document.getElementById('waiting-status');
-      if(el)el.textContent=`✅ ${room.p2?.name||'Player 2'} が参加！対戦開始します...`;
-      setTimeout(()=>{
-        FB.roomRef.update({status:'started'});
+      const statusEl=document.getElementById('waiting-status');
+      if(statusEl)statusEl.textContent=`✅ ${room.p2?.name||'Player 2'} が参加！`;
+      // Set started first so P2 also gets the signal
+      FB.roomRef.update({status:'started'}).then(()=>startOnlineDuel(room));
+    }
+
+    // P2: either 'ready' (we set it) or 'started' (P1 confirmed) → start
+    if(FB.myRole==='p2'&&!started&&!DS.active){
+      if((room.status==='started'||room.status==='ready')&&room.p1?.deck&&room.p2?.deck){
+        started=true;
         startOnlineDuel(room);
-      },1200);
+      }
     }
 
-    // P2: detect started → start
-    if(room.status==='started'&&FB.myRole==='p2'&&!DS.active&&!started){
-      started=true;
-      startOnlineDuel(room);
-    }
-
-    // Both: sync opponent actions
+    // Both: apply opponent actions
     if(DS.active&&room.actions){
       applyNewActions(room.actions);
     }
@@ -3724,23 +3731,30 @@ function listenRoom(){
 }
 
 function startOnlineDuel(room){
+  if(DS.active)return; // prevent double-start
   const el=document.getElementById('room-waiting');
   if(el)el.classList.add('hidden');
 
-  // P1 = index 0 (先攻), P2 = index 1 (後攻)
-  // viewP: P1 sees index 0 at bottom, P2 sees index 1 at bottom
   const myIdx = FB.myRole==='p1' ? 0 : 1;
+  const roomId = room.id || FB.roomId || 'DEFAULT';
+  const seed = roomToSeed(roomId);
+  const startTs = Date.now();
 
   DS.active=true; DS.turn=0; DS.turnCount=1; DS.firstTurn=true;
   DS.phase='main1'; DS.state='idle'; DS.buffs=[]; DS.log=[];
-  DS.viewP=myIdx; DS.isOnline=true; DS.applyingRemote=false; DS.lastActionSeq=0;
+  DS.viewP=myIdx; DS.isOnline=true; DS.applyingRemote=false;
+  // Only process actions pushed AFTER we joined — ignore pre-game noise
+  DS.lastActionSeq = Date.now() * 1000;
+  _actionCounter = 0;
 
-  // Always build with same seed: P1 deck → index 0, P2 deck → index 1
-  DS.players[0]=mkPlayerFromDeckData(room.p1.name,room.p1.deck);
-  DS.players[1]=mkPlayerFromDeckData(room.p2.name,room.p2.deck);
-
-  // Same shuffle seed by sorting hand deterministically after draw
+  DS.players[0]=mkPlayerFromDeckData(room.p1.name, room.p1.deck, seed);
+  DS.players[1]=mkPlayerFromDeckData(room.p2.name, room.p2.deck, seed+1);
   drawCard(0,5); drawCard(1,5);
+
+  // P1 clears stale actions from Firebase so P2 starts with a clean slate
+  if(FB.myRole==='p1'&&FB.roomRef){
+    FB.roomRef.child('actions').remove().catch(()=>{});
+  }
 
   document.getElementById('duel-setup').classList.add('hidden');
   document.getElementById('duel-field').classList.remove('hidden');
@@ -3754,10 +3768,14 @@ function startOnlineDuel(room){
 // Action types: advancePhase, normalSummon, setMonster, setST, activateSpellHand,
 // activateFromField, monsterEff, changePos, flipSummon, attack, surrender
 
+let _actionCounter = 0;
+
 function pushAction(type, payload){
   if(!DS.isOnline||DS.applyingRemote||!FB.roomRef)return;
-  const seq=Date.now();
-  FB.roomRef.child('actions').push({type,payload:payload||{},by:FB.myRole,seq});
+  _actionCounter++;
+  // seq combines timestamp + counter to guarantee uniqueness even in same ms
+  const seq = Date.now() * 1000 + _actionCounter;
+  FB.roomRef.child('actions').push({type, payload:payload||{}, by:FB.myRole, seq});
 }
 
 function applyNewActions(actionsObj){
@@ -3767,12 +3785,18 @@ function applyNewActions(actionsObj){
     .filter(a=>a.by!==myRole && a.seq>DS.lastActionSeq)
     .sort((a,b)=>a.seq-b.seq);
   if(!entries.length)return;
+
   DS.applyingRemote=true;
-  entries.forEach(a=>{
-    DS.lastActionSeq=Math.max(DS.lastActionSeq,a.seq);
-    applyAction(a);
-  });
-  DS.applyingRemote=false;
+  try{
+    entries.forEach(a=>{
+      DS.lastActionSeq=Math.max(DS.lastActionSeq,a.seq);
+      applyAction(a);
+    });
+  }catch(err){
+    console.error('applyAction error:',err);
+  }finally{
+    DS.applyingRemote=false;
+  }
   renderDuel();
 }
 
@@ -3804,6 +3828,25 @@ function applyAction(a){
     case 'attack':       p.tgt===-1?doAttack(p.tp,-1):doAttack(p.tp,p.tgt); break;
     case 'surrender':    addLog(`相手が降参しました`,'lgd'); endDuel(FB.myRole==='p1'?0:1); break;
     case 'log':          addLog(p.msg,p.cls||''); break;
+    case 'targetResult':
+      // Opponent selected a target — apply same target choice on our side
+      if(DS.state==='target'&&DS.target.filter&&DS.target.filter(p.p,p.zone,p.idx)){
+        const cb=DS.target.cb;
+        DS.state='idle';DS.target={filter:null,cb:null,label:''};
+        updateStatusBanner();
+        cb(p.p,p.zone,p.idx);
+      }
+      break;
+    case 'cardSelectResult':
+      // Opponent selected a card from modal — apply same choice on our side
+      if(_cardSelectCb&&_pendingSelectCards&&_pendingSelectCards[p.cardIdx]){
+        const cb=_cardSelectCb;
+        const chosen=_pendingSelectCards[p.cardIdx];
+        _cardSelectCb=null; _pendingSelectCards=null;
+        document.getElementById('card-select-modal').classList.remove('open');
+        cb(chosen);
+      }
+      break;
   }
 }
 
@@ -3817,9 +3860,26 @@ function exportDeckForOnline(deck){
   return{main:resolve(deck.main),extra:resolve(deck.extra)};
 }
 
-function mkPlayerFromDeckData(name,deckData){
-  // Use deterministic order (already shuffled once at room creation)
-  const main=[...(deckData.main||[])];
+function seededShuffle(arr, seed){
+  // Deterministic Fisher-Yates using LCG — same seed = same result on both sides
+  let s = ((seed>>>0)||987654321)>>>0;
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    s=Math.imul(s,1664525)+1013904223>>>0;
+    const j=s%(i+1);
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function roomToSeed(roomId){
+  // Convert 6-char room ID to a stable integer seed
+  return [...(roomId||'DEFAULT')].reduce((h,c)=>(Math.imul(31,h)+c.charCodeAt(0))>>>0,0);
+}
+
+function mkPlayerFromDeckData(name,deckData,seed){
+  // seed ensures BOTH sides produce identical shuffle
+  const main=seededShuffle([...(deckData.main||[])], seed!=null?seed:Date.now());
   const extra=[...(deckData.extra||[])];
   return{name,lp:4000,hand:[],deck:main,grave:[],extra,removed:[],
     field:{monsters:[null,null,null],spells:[null,null,null]},
@@ -3831,9 +3891,13 @@ function mkPlayerFromDeckData(name,deckData){
    CARD SELECT MODAL
 =========================== */
 let _cardSelectCb = null;
+let _pendingSelectCards = null;
 
 function showCardSelectModal(cards, title, cb) {
   _cardSelectCb = cb;
+  _pendingSelectCards = cards;
+  // When applying remote action: just store callback, wait for cardSelectResult action
+  if(DS.applyingRemote) return;
   document.getElementById('card-select-title').textContent = title;
   const content = document.getElementById('card-select-content');
   content._cards = cards;
@@ -3856,18 +3920,21 @@ function showCardSelectModal(cards, title, cb) {
 }
 
 function doCardSelect(idx) {
-  const content = document.getElementById('card-select-content');
-  const cards = content._cards;
+  const cards = _pendingSelectCards;
   document.getElementById('card-select-modal').classList.remove('open');
   if (_cardSelectCb && cards && cards[idx]) {
     const cb = _cardSelectCb;
     _cardSelectCb = null;
+    _pendingSelectCards = null;
+    // Push selection to opponent before applying
+    pushAction('cardSelectResult',{cardIdx:idx});
     cb(cards[idx]);
   }
 }
 
 function cancelCardSelect() {
   _cardSelectCb = null;
+  _pendingSelectCards = null;
   document.getElementById('card-select-modal').classList.remove('open');
 }
 

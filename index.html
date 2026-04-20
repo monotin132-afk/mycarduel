@@ -911,6 +911,26 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
         <div class="small-zone" onclick="viewGraveModal(opp(DS.viewP),'grave')" title="墓地">GY<span class="sz-cnt" id="p2-gyc">0</span></div>
       </div>
     </div>
+    <!-- P2 LP target zone (always visible in battle phase when attacking) -->
+    <div class="field-row" id="p2-lp-target-row" style="display:none;margin-bottom:2px">
+      <div id="p2-lp-target"
+        onclick="directClick(opp(DS.viewP),event)"
+        style="
+          display:flex;align-items:center;justify-content:center;gap:8px;
+          width:278px;height:36px;
+          border:2px solid rgba(232,106,255,.6);
+          border-radius:8px;
+          background:rgba(232,106,255,.08);
+          cursor:pointer;
+          font-family:'Cinzel',serif;font-size:12px;
+          color:rgba(232,106,255,.9);
+          letter-spacing:1px;
+          transition:.15s;
+          animation:zpulse .6s infinite alternate;
+        ">
+        ⚔ 相手LP本体へダイレクトアタック
+      </div>
+    </div>
     <!-- P2 Monster row -->
     <div class="field-row" style="margin-bottom:3px">
       <div style="width:60px"></div>
@@ -3313,6 +3333,16 @@ function updatePhaseBtn(){
 
 function renderAllZones(){
   const isTgt=DS.state==='target';const isAtk=DS.state==='attack';const isTrib=DS.state==='tribute';
+
+  // Show/hide the permanent LP target row (above P2 monsters)
+  // Visible when: attack declared, it's the top player (opp of viewP) being attacked, and they have no monsters
+  const atkActive = isAtk && DS.attackSrc;
+  const topP = opp(DS.viewP);
+  const topHasM = DS.players[topP].field.monsters.some(x=>x);
+  const showLpTarget = atkActive && DS.attackSrc.p===DS.viewP && !topHasM;
+  const lpTargetRow = document.getElementById('p2-lp-target-row');
+  if(lpTargetRow) lpTargetRow.style.display = showLpTarget ? 'flex' : 'none';
+
   // bottom = DS.viewP, top = opp(DS.viewP); p1 elements = bottom, p2 elements = top
   [DS.viewP,opp(DS.viewP)].forEach((p,side)=>{
     const pid=side===0?'p1':'p2';
@@ -3327,13 +3357,9 @@ function renderAllZones(){
       const isSel=DS.selected&&DS.selected.p===p&&DS.selected.zone==='monsters'&&DS.selected.idx===i;
       const isTribSel=isTrib&&p===DS.turn&&DS.tribute.selected.includes(i);
       const canTgt=isTgt&&DS.target.filter&&DS.target.filter(p,'monsters',i);
-      const isAtkTgt=isAtk&&p===opp(DS.attackSrc.p)&&fc&&fc.faceUp;
+      const isAtkTgt=isAtk&&p===opp(DS.attackSrc?.p)&&fc&&fc.faceUp;
       let cls='zone-slot'+(fc?' has-card':'')+(isSel||isTribSel?' sel-slot':'')+(canTgt||isAtkTgt?' can-target':'');
       mHTML+=`<div class="${cls}" onclick="zoneClick(${p},'monsters',${i},event)" onmouseenter="if(DS.players[${p}]?.field.monsters[${i}])showHoverPopupCard(event,DS.players[${p}].field.monsters[${i}].card)" onmouseleave="hideHoverPopup();clearLongPress()" onmousedown="startLongPress(event,${p},${i},'monsters')" ontouchstart="startLongPress(event,${p},${i},'monsters')" onmouseup="clearLongPress()" ontouchend="clearLongPress()">${fc?renderMiniCard(fc,p,'monsters',i):'<span class="zone-lbl">M</span>'}</div>`;
-    }
-    // Direct attack area — show INSTEAD of monster zones when attacker has chosen attack and defender has no monsters
-    if(isAtk&&p===opp(DS.attackSrc.p)&&!oppHasM){
-      mHTML=`<div class="zone-slot can-target" style="width:278px;height:60px;font-size:13px;color:#e86aff;text-align:center;font-family:'Cinzel',serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;animation:zpulse .6s infinite alternate" onclick="directClick(${p},event)">⚔ ダイレクトアタック！</div>`;
     }
     document.getElementById(`${pid}-mn`).innerHTML=mHTML;
 
@@ -3488,8 +3514,21 @@ function initOnlineMode(){
   }
 }
 
+/* ── あなたのFirebase設定をここに入力してください ── */
+const FB_PRESET_CONFIG = {
+  apiKey:      "AIzaSyAKmYaR4OuNezDz475JeQBXpBHqyRUNnuM",
+  authDomain:  "my-card-duel.firebaseapp.com",
+  databaseURL: "https://my-card-duel-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:   "my-card-duel"
+};
+/* ─────────────────────────────────────────────── */
+
 function loadFBConfig(){
-  try{const r=localStorage.getItem('fb_cfg');return r?JSON.parse(r):null;}catch(e){return null;}
+  // 1. User-entered config in localStorage takes priority (for config reset)
+  try{const r=localStorage.getItem('fb_cfg');if(r){const c=JSON.parse(r);if(c&&c.apiKey&&c.databaseURL)return c;}}catch(e){}
+  // 2. Fall back to preset config baked into the HTML
+  if(FB_PRESET_CONFIG.apiKey&&FB_PRESET_CONFIG.databaseURL) return FB_PRESET_CONFIG;
+  return null;
 }
 
 function saveFirebaseConfig(){

@@ -466,6 +466,19 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
 .chp-effect::-webkit-scrollbar{width:3px}
 .chp-effect::-webkit-scrollbar-thumb{background:rgba(180,160,255,.2);border-radius:2px}
 .chp-rank{position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px}
+
+/* ── IMAGE CROP MODAL ── */
+#crop-modal .modal{max-width:380px}
+.crop-stage{position:relative;overflow:hidden;background:#111;border-radius:8px;cursor:crosshair;touch-action:none;user-select:none}
+.crop-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);pointer-events:none}
+.crop-box{position:absolute;border:2px solid var(--gold);box-shadow:0 0 0 9999px rgba(0,0,0,.55);border-radius:2px;cursor:move;box-sizing:border-box}
+.crop-handle{position:absolute;width:12px;height:12px;background:var(--gold);border-radius:2px}
+.crop-handle.tl{top:-6px;left:-6px;cursor:nwse-resize}
+.crop-handle.tr{top:-6px;right:-6px;cursor:nesw-resize}
+.crop-handle.bl{bottom:-6px;left:-6px;cursor:nesw-resize}
+.crop-handle.br{bottom:-6px;right:-6px;cursor:nwse-resize}
+.crop-preview-wrap{display:flex;gap:10px;align-items:flex-start;margin-top:10px;justify-content:center}
+.crop-thumb{border-radius:4px;overflow:hidden;flex-shrink:0;background:#222}
 </style>
 </head>
 <body>
@@ -1008,6 +1021,48 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
   </div>
 </div>
 
+<!-- Effect Activation Choice Modal -->
+<div class="modal-backdrop" id="eff-choice-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" style="font-size:13px">⚡ 効果発動の確認</div>
+    <div style="font-size:11px;color:var(--text2);margin-bottom:6px">
+      <span style="font-size:10px;color:var(--gold2);background:rgba(200,163,39,.12);padding:2px 8px;border-radius:8px;border:1px solid var(--gold3)" id="ec-timing"></span>
+    </div>
+    <div style="font-family:'Cinzel',serif;font-size:15px;color:var(--text);margin-bottom:8px" id="ec-card-name"></div>
+    <div style="font-size:11px;color:rgba(220,210,190,.8);background:rgba(0,0,0,.3);border-radius:6px;padding:8px;border:1px solid rgba(255,255,255,.05);margin-bottom:14px;line-height:1.6" id="ec-eff-desc"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-outline" id="ec-no" style="min-width:80px">スルー</button>
+      <button class="btn btn-primary" id="ec-yes" style="min-width:80px">⚡ 発動！</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image Crop Modal -->
+<div class="modal-backdrop" id="crop-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">画像の切り抜き範囲を選択</div>
+    <div class="crop-stage" id="crop-stage">
+      <img id="crop-src-img" style="display:block;max-width:100%;pointer-events:none;user-select:none">
+      <div class="crop-box" id="crop-box">
+        <div class="crop-handle tl" data-dir="tl"></div>
+        <div class="crop-handle tr" data-dir="tr"></div>
+        <div class="crop-handle bl" data-dir="bl"></div>
+        <div class="crop-handle br" data-dir="br"></div>
+      </div>
+    </div>
+    <div class="crop-preview-wrap">
+      <div>
+        <div style="font-size:9px;color:var(--text2);text-align:center;margin-bottom:3px">プレビュー</div>
+        <div class="crop-thumb" id="crop-thumb" style="width:80px;height:116px;position:relative;overflow:hidden"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelCrop()">キャンセル</button>
+      <button class="btn btn-primary" onclick="applyCrop()">✓ この範囲で確定</button>
+    </div>
+  </div>
+</div>
+
 <!-- Card Select Modal (for search/special summon effects) -->
 <div class="modal-backdrop" id="card-select-modal">
   <div class="modal" style="max-width:480px">
@@ -1357,6 +1412,12 @@ function setDefIcon(ic, btn) {
   upPrev();
 }
 
+/* ===========================
+   IMAGE CROP SYSTEM
+=========================== */
+let _cropData = null; // {imgEl, naturalW, naturalH, stageW, stageH, box:{x,y,w,h}}
+let _cropDrag = null; // {type:'move'|'tl'|'tr'|'bl'|'br', startX, startY, startBox}
+
 function handleImg(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -1364,20 +1425,175 @@ function handleImg(e) {
   reader.onload = ev => {
     const img = new Image();
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const MAX = 400;
-      const r = Math.min(MAX/img.width, MAX/img.height, 1);
-      canvas.width = img.width * r;
-      canvas.height = img.height * r;
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      S.c.image = canvas.toDataURL('image/jpeg', 0.75);
-      const ua = document.getElementById('upload-area');
-      ua.classList.add('has-image');
-      ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)">
-        <img class="upload-preview" src="${S.c.image}">
-        <span class="upload-hint" style="font-size:10px">タップして変更</span>`;
-      upPrev();
+      openCropModal(ev.target.result, img.naturalWidth, img.naturalHeight);
     };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function openCropModal(src, nw, nh) {
+  const modal = document.getElementById('crop-modal');
+  const stage = document.getElementById('crop-stage');
+  const imgEl = document.getElementById('crop-src-img');
+  imgEl.src = src;
+
+  // Let image load then measure stage
+  imgEl.onload = () => {
+    const sw = stage.clientWidth || 340;
+    const scale = sw / nw;
+    const sh = nh * scale;
+    stage.style.height = sh + 'px';
+
+    // Default crop box: card aspect ratio (220:320) centered
+    const cardRatio = 320/220;
+    let bw = sw * 0.85;
+    let bh = bw * cardRatio;
+    if (bh > sh * 0.9) { bh = sh * 0.9; bw = bh / cardRatio; }
+    const bx = (sw - bw) / 2;
+    const by = (sh - bh) / 2;
+
+    _cropData = { src, nw, nh, sw, sh, box: { x: bx, y: by, w: bw, h: bh } };
+    updateCropBox();
+  };
+
+  // If already loaded
+  if (imgEl.complete && imgEl.naturalWidth) imgEl.onload();
+  modal.classList.add('open');
+  setupCropDrag();
+}
+
+function updateCropBox() {
+  if (!_cropData) return;
+  const b = _cropData.box;
+  const box = document.getElementById('crop-box');
+  box.style.left   = b.x + 'px';
+  box.style.top    = b.y + 'px';
+  box.style.width  = b.w + 'px';
+  box.style.height = b.h + 'px';
+  updateCropPreview();
+}
+
+function updateCropPreview() {
+  if (!_cropData) return;
+  const { src, nw, nh, sw, sh, box: b } = _cropData;
+  const thumb = document.getElementById('crop-thumb');
+  const tw = 80, th = 116;
+  const scaleX = nw / sw, scaleY = nh / sh;
+  const srcX = b.x * scaleX, srcY = b.y * scaleY;
+  const srcW = b.w * scaleX, srcH = b.h * scaleY;
+  const disp = tw / srcW; // display scale
+  thumb.innerHTML = `<img src="${src}" style="position:absolute;width:${nw*disp}px;height:${nh*disp}px;left:${-srcX*disp}px;top:${-srcY*disp}px;max-width:none">`;
+}
+
+function setupCropDrag() {
+  const stage = document.getElementById('crop-stage');
+  stage.onmousedown = stage.ontouchstart = function(e) {
+    if (!_cropData) return;
+    const target = e.target;
+    const dir = target.dataset.dir;
+    const rect = stage.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    _cropDrag = {
+      type: dir || 'move',
+      startX: cx, startY: cy,
+      startBox: { ..._cropData.box }
+    };
+    e.preventDefault();
+  };
+
+  document.onmousemove = document.ontouchmove = function(e) {
+    if (!_cropDrag || !_cropData) return;
+    const stage = document.getElementById('crop-stage');
+    const rect = stage.getBoundingClientRect();
+    const cx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    const cy = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+    const dx = cx - _cropDrag.startX, dy = cy - _cropDrag.startY;
+    const sb = _cropDrag.startBox;
+    const { sw, sh } = _cropData;
+    let { x, y, w, h } = sb;
+    const minSz = 30;
+    const ar = h / w; // maintain aspect ratio on resize
+
+    if (_cropDrag.type === 'move') {
+      x = Math.max(0, Math.min(sw - w, sb.x + dx));
+      y = Math.max(0, Math.min(sh - h, sb.y + dy));
+    } else {
+      // Resize by corner
+      if (_cropDrag.type === 'br') {
+        w = Math.max(minSz, Math.min(sw - sb.x, sb.w + dx));
+        h = w * ar;
+        if (sb.y + h > sh) { h = sh - sb.y; w = h / ar; }
+      } else if (_cropDrag.type === 'bl') {
+        w = Math.max(minSz, sb.w - dx);
+        h = w * ar;
+        x = sb.x + sb.w - w;
+        if (x < 0) { x = 0; w = sb.x + sb.w; h = w * ar; }
+        if (sb.y + h > sh) { h = sh - sb.y; w = h / ar; x = sb.x + sb.w - w; }
+      } else if (_cropDrag.type === 'tr') {
+        w = Math.max(minSz, sb.w + dx);
+        h = w * ar;
+        y = sb.y + sb.h - h;
+        if (sb.x + w > sw) { w = sw - sb.x; h = w * ar; y = sb.y + sb.h - h; }
+        if (y < 0) { y = 0; h = sb.y + sb.h; w = h / ar; }
+      } else if (_cropDrag.type === 'tl') {
+        w = Math.max(minSz, sb.w - dx);
+        h = w * ar;
+        x = sb.x + sb.w - w;
+        y = sb.y + sb.h - h;
+        if (x < 0) { x = 0; w = sb.x + sb.w; h = w * ar; y = sb.y + sb.h - h; }
+        if (y < 0) { y = 0; h = sb.y + sb.h; w = h / ar; x = sb.x + sb.w - w; }
+      }
+    }
+    _cropData.box = { x, y, w, h };
+    updateCropBox();
+    e.preventDefault();
+  };
+
+  document.onmouseup = document.ontouchend = function() { _cropDrag = null; };
+}
+
+function applyCrop() {
+  if (!_cropData) return;
+  const { src, nw, nh, sw, sh, box: b } = _cropData;
+  const scaleX = nw / sw, scaleY = nh / sh;
+  const sx = b.x * scaleX, sy = b.y * scaleY;
+  const sw2 = b.w * scaleX, sh2 = b.h * scaleY;
+
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const OUT = 440;
+    canvas.width = OUT;
+    canvas.height = Math.round(OUT * (sh2 / sw2));
+    canvas.getContext('2d').drawImage(img, sx, sy, sw2, sh2, 0, 0, canvas.width, canvas.height);
+    S.c.image = canvas.toDataURL('image/jpeg', 0.82);
+    const ua = document.getElementById('upload-area');
+    ua.classList.add('has-image');
+    ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)">
+      <img class="upload-preview" src="${S.c.image}" style="max-height:100px">
+      <span class="upload-hint" style="font-size:10px">タップして変更 / 長押しで再クロップ</span>`;
+    // Long press on preview re-opens crop
+    ua.querySelector('img').oncontextmenu = (e) => { e.preventDefault(); openCropModal(src, nw, nh); };
+    upPrev();
+    cancelCrop();
+  };
+  img.src = src;
+}
+
+function cancelCrop() {
+  document.getElementById('crop-modal').classList.remove('open');
+  _cropData = null; _cropDrag = null;
+}
+
+function handleImg(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => openCropModal(ev.target.result, img.naturalWidth, img.naturalHeight);
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
@@ -2639,6 +2855,7 @@ function advancePhase(){
     if(DS.state==='tribute'){cancelTribute();return;}
     if(DS.state==='attack'){cancelAttack();return;}
     if(DS.state==='target'){cancelTarget();return;}
+    if(DS.state==='chain'){closeChainWindow();}
     if(DS.isOnline&&DS.turn!==DS.viewP){toast('相手のターンです','error');return;}
   }
   pushAction('advancePhase',{});
@@ -2681,6 +2898,8 @@ function doEndPhase(){
     const c=p.hand.pop();p.grave.push(c);
     addLog(`${p.name} が「${c.name}」を手札超過で墓地へ`,'');
   }
+  // Trigger endphase effects before resetting
+  triggerEndPhaseEffects();
   p.summonedMain=false;
   p.attackedIdxs=new Set();
   clearTurnBuffs();
@@ -2731,9 +2950,169 @@ function toGrave(p,zone,idx){
   const pl=DS.players[p];
   const fc=pl.field[zone][idx];
   if(!fc)return;
-  pl.grave.push(fc.card);
+  const card=fc.card;
+  pl.grave.push(card);
   pl.field[zone][idx]=null;
-  addLog(`「${fc.card.name}」が墓地へ`,'');
+  addLog(`「${card.name}」が墓地へ`,'');
+  // Trigger destroy effects on the card itself
+  if(card.effects){
+    card.effects.forEach(eff=>{
+      if(eff.timing==='destroy') activateOneEff(eff,p,opp(p),card,null);
+    });
+  }
+  // Clean up buffs whose source was this card
+  cleanStaleBuffs();
+}
+
+function triggerSummonEffects(p,slotIdx){
+  const fc=DS.players[p].field.monsters[slotIdx];
+  if(!fc||!fc.card.effects)return;
+  fc.card.effects.forEach(eff=>{
+    if(eff.timing==='summon'){
+      offerEffectActivation(p,slotIdx,eff,'monsters');
+    }
+  });
+}
+
+// Trigger endphase effects for all face-up continuous cards and monster effects
+function triggerEndPhaseEffects(){
+  [0,1].forEach(p=>{
+    DS.players[p].field.spells.forEach((fc,si)=>{
+      if(!fc||!fc.faceUp)return;
+      (fc.card.effects||[]).forEach(eff=>{
+        if(eff.timing==='endphase'){
+          offerEffectActivation(p,si,eff,'spells');
+        }
+      });
+    });
+    DS.players[p].field.monsters.forEach((fc,mi)=>{
+      if(!fc||!fc.faceUp)return;
+      (fc.card.effects||[]).forEach(eff=>{
+        if(eff.timing==='endphase'){
+          offerEffectActivation(p,mi,eff,'monsters');
+        }
+      });
+    });
+  });
+}
+
+// Trigger opponent_activate effects when any card is activated
+function triggerOpponentActivateEffects(activatingP){
+  const respP=opp(activatingP);
+  DS.players[respP].field.monsters.forEach((fc,mi)=>{
+    if(!fc||!fc.faceUp||fc.effUsed)return;
+    (fc.card.effects||[]).forEach(eff=>{
+      if(eff.timing==='opponent_activate'){
+        offerEffectActivation(respP,mi,eff,'monsters');
+      }
+    });
+  });
+  DS.players[respP].field.spells.forEach((fc,si)=>{
+    if(!fc||!fc.faceUp||fc.justSet)return;
+    (fc.card.effects||[]).forEach(eff=>{
+      if(eff.timing==='opponent_activate'){
+        offerEffectActivation(respP,si,eff,'spells');
+      }
+    });
+  });
+}
+
+/* ---- EFFECT ACTIVATION CHOICE UI ---- */
+// Queue of pending effect offers [{p, slotIdx, eff, zone}]
+let _effQueue=[];
+let _effQueueRunning=false;
+
+function offerEffectActivation(p,slotIdx,eff,zone){
+  _effQueue.push({p,slotIdx,eff,zone});
+  if(!_effQueueRunning) processEffQueue();
+}
+
+function processEffQueue(){
+  if(!_effQueue.length){_effQueueRunning=false;renderDuel();return;}
+  _effQueueRunning=true;
+  const {p,slotIdx,eff,zone}=_effQueue.shift();
+  const fc=DS.players[p].field[zone][slotIdx];
+  if(!fc){processEffQueue();return;}
+  const card=fc.card;
+
+  // In online mode, only local player's turn or chain window
+  if(DS.isOnline&&p!==DS.viewP){processEffQueue();return;}
+
+  const timingLabel={
+    summon:'召喚成功時',destroy:'破壊された時',attack:'攻撃宣言時',
+    endphase:'エンドフェイズ',opponent_activate:'相手効果発動時',
+    freechain:'フリーチェーン',main:'メインフェイズ',always:'常時'
+  }[eff.timing]||eff.timing;
+
+  showEffectChoiceModal(card,eff,timingLabel,()=>{
+    // Yes — activate
+    activateOneEff(eff,p,opp(p),card,{zone,idx:slotIdx});
+    if(zone==='monsters'&&eff.timing!=='summon')fc.effUsed=true;
+    renderDuel();
+    processEffQueue();
+  },()=>{
+    // No — skip
+    processEffQueue();
+  });
+}
+
+function showEffectChoiceModal(card,eff,timingLabel,onYes,onNo){
+  const modal=document.getElementById('eff-choice-modal');
+  const nameEl=document.getElementById('ec-card-name');
+  const descEl=document.getElementById('ec-eff-desc');
+  const timingEl=document.getElementById('ec-timing');
+  if(!modal){onNo();return;}
+  nameEl.textContent=card.name||'カード';
+  timingEl.textContent=timingLabel;
+  descEl.textContent=eff.text||'効果を発動しますか？';
+  document.getElementById('ec-yes').onclick=()=>{
+    modal.classList.remove('open');
+    onYes();
+  };
+  document.getElementById('ec-no').onclick=()=>{
+    modal.classList.remove('open');
+    onNo();
+  };
+  modal.classList.add('open');
+  // Auto-close after 8 seconds (choose No)
+  setTimeout(()=>{if(modal.classList.contains('open')){modal.classList.remove('open');onNo();}},8000);
+}
+
+/* ---- CHAIN WINDOW ---- */
+// When srcPlayer activates an effect, opponent has a brief window to respond
+// with freechain/counter cards.
+let _chainTimer=null;
+
+function openChainWindow(activatingP){
+  // Trigger opponent_activate effects (negate_effect, counter traps etc.)
+  triggerOpponentActivateEffects(activatingP);
+
+  const respP=opp(activatingP);
+  // Only show chain window locally if opponent has freechain/counter/trap cards set
+  const hasChainCard=DS.players[respP].field.spells.some(fc=>{
+    if(!fc||fc.justSet)return false;
+    if(!fc.faceUp&&(fc.card.type==='trap'||fc.card.subtype==='quick'))return true;
+    if(fc.faceUp&&fc.card.subtype==='continuous')return false; // already active
+    return false;
+  })||DS.players[respP].hand.some(c=>c.subtype==='quick'||c.subtype==='counter');
+  if(!hasChainCard)return; // no chain possible, skip window
+
+  DS.state='chain';
+  const banner=document.getElementById('d-status');
+  banner.className='status-banner tgt-banner';
+  banner.innerHTML=`⛓ チェーンできますか？（${DS.players[respP].name}）
+    <button onclick="closeChainWindow()" style="margin-left:8px;padding:1px 10px;border-radius:4px;border:1px solid rgba(50,200,100,.4);background:none;color:#4ae878;cursor:pointer;font-size:10px">スルー</button>`;
+  banner.classList.remove('hidden');
+  // Auto-close after 4 seconds
+  if(_chainTimer)clearTimeout(_chainTimer);
+  _chainTimer=setTimeout(()=>closeChainWindow(),4000);
+}
+
+function closeChainWindow(){
+  if(_chainTimer){clearTimeout(_chainTimer);_chainTimer=null;}
+  if(DS.state==='chain'){DS.state='idle';}
+  updateStatusBanner();
+  renderDuel();
 }
 
 /* ---- SUMMON ---- */
@@ -2752,7 +3131,10 @@ function tryNormalSummon(p,handIdx,pos='atk'){
     pl.summonedMain=true;
     addLog(`${pl.name} が「${c.name}」を通常召喚！（${pos.toUpperCase()}）`,'lgs');
     pushAction('normalSummon',{pl:p,idx:handIdx,pos});
-    DS.selected=null;renderDuel();
+    DS.selected=null;
+    // Trigger summon effects
+    triggerSummonEffects(p,slot);
+    renderDuel();
   } else {
     const avail=pl.field.monsters.filter(x=>x).length;
     if(avail<tribN){toast(`リリースが${tribN}体必要です`,'error');return;}
@@ -2782,6 +3164,7 @@ function tributeClick(idx){
     addLog(`${pl.name} が「${c.name}」をリリース召喚！`,'lgs');
     pushAction('normalSummon',{pl:DS.turn,idx:handIdx,pos,tributes:[...DS.tribute.selected]});
     cancelTribute();
+    triggerSummonEffects(DS.turn,slot);
   } else {renderDuel();}
 }
 function cancelTribute(){DS.state='idle';DS.tribute={needed:0,selected:[],pendingHand:-1,pendingPos:'atk'};updateStatusBanner();renderDuel();}
@@ -2823,7 +3206,10 @@ function doActivateSpellHand(p,handIdx){
     addLog(`${pl.name} が「${card.name}」を発動`,'lgs');
   }
   pushAction('activateSpellHand',{pl:p,idx:handIdx});
-  if(card.effects&&card.effects.length)activateEffects(card.effects,p,opp(p),card,null);
+  if(card.effects&&card.effects.length){
+    openChainWindow(p);
+    activateEffects(card.effects,p,opp(p),card,null);
+  }
   DS.selected=null;renderDuel();
 }
 
@@ -2838,7 +3224,10 @@ function doActivateFromField(p,zone,idx){
   if(!isCont){pl.field[zone][idx]=null;pl.grave.push(card);}
   else{fc.effUsed=true;}
   pushAction('activateFromField',{pl:p,zone,idx});
-  if(card.effects&&card.effects.length)activateEffects(card.effects,p,opp(p),card,{zone,idx});
+  if(card.effects&&card.effects.length){
+    openChainWindow(p);
+    activateEffects(card.effects,p,opp(p),card,{zone,idx});
+  }
   renderDuel();
 }
 
@@ -2848,10 +3237,14 @@ function doMonsterEff(p,idx){
   if(!fc||!fc.faceUp)return;
   if(fc.effUsed){toast('この効果はすでに使用しました','error');return;}
   if(!fc.card.effects||!fc.card.effects.length){toast('発動できる効果がありません','error');return;}
-  addLog(`${pl.name} が「${fc.card.name}」の効果を発動！`,'lgs');
-  fc.effUsed=true;
   pushAction('monsterEff',{pl:p,idx});
-  activateEffects(fc.card.effects,p,opp(p),fc.card,{zone:'monsters',idx});
+  // Queue each manually-activated effect for confirmation
+  fc.card.effects.forEach(eff=>{
+    if(eff.timing==='main'||eff.timing==='freechain'||eff.timing==='always'||!eff.timing){
+      offerEffectActivation(p,idx,eff,'monsters');
+    }
+  });
+  fc.effUsed=true;
   renderDuel();
 }
 
@@ -2862,7 +3255,8 @@ function doFlipSummon(p,idx){
   fc.faceUp=true;fc.pos='atk';
   addLog(`${pl.name} が「${fc.card.name}」をリバース召喚！`,'lgs');
   pushAction('flipSummon',{pl:p,idx});
-  if(fc.card.effects)activateEffects(fc.card.effects,p,opp(p),fc.card,{zone:'monsters',idx});
+  // Trigger summon-timing effects
+  triggerSummonEffects(p,idx);
   renderDuel();
 }
 
@@ -2879,8 +3273,17 @@ function doChangePos(p,idx){
 /* ---- ATTACK ---- */
 function startAttack(p,idx){
   DS.state='attack';DS.attackSrc={p,idx};
-  const name=DS.players[p].field.monsters[idx].card.name;
+  const fc=DS.players[p].field.monsters[idx];
+  const name=fc.card.name;
   addLog(`「${name}」で攻撃宣言！対象を選んでください`,'lgi');
+  // Trigger 'attack' timing effects on the attacking monster
+  if(fc.card.effects){
+    fc.card.effects.forEach(eff=>{
+      if(eff.timing==='attack') activateOneEff(eff,p,opp(p),fc.card,{zone:'monsters',idx});
+    });
+  }
+  // Open chain window for opponent (negate_attack trap etc.)
+  openChainWindow(p);
   updateStatusBanner();renderDuel();
 }
 function cancelAttack(){DS.state='idle';DS.attackSrc=null;updateStatusBanner();renderDuel();}
@@ -2943,8 +3346,8 @@ function doAttack(targetP,targetIdx){
 function zoneClick(p,zone,idx,ev){
   if(ev)ev.stopPropagation();
   if(LP.triggered){LP.triggered=false;return;}
-  // Online: block only local user actions, not remote-applied actions
-  if(DS.isOnline&&!DS.applyingRemote&&DS.turn!==DS.viewP&&DS.state==='idle')return;
+  // Online: block idle-state actions when not your turn (but allow chain/target responses)
+  if(DS.isOnline&&!DS.applyingRemote&&DS.turn!==DS.viewP&&(DS.state==='idle'))return;
   const fc=DS.players[p].field[zone][idx];
   const ap=DS.turn;
 
@@ -3026,12 +3429,15 @@ function showHandActions(p,idx,card,x,y){
 }
 
 function showZoneActions(p,zone,idx,fc,x,y){
-  const isMyZone = DS.isOnline ? (p===DS.viewP && DS.turn===DS.viewP) : (p===DS.turn);
+  const isMyTurn = DS.isOnline ? (DS.turn===DS.viewP) : (p===DS.turn);
+  const isMyCard = DS.isOnline ? (p===DS.viewP) : (p===DS.turn);
   const isMain=DS.phase==='main1';
   const isBattle=DS.phase==='battle';
+  const isChain=DS.state==='chain';
   let items=[];
+
   if(zone==='monsters'){
-    if(isMyZone){
+    if(isMyTurn&&isMyCard){
       if(!fc.faceUp&&isMain&&!fc.justSet)items.push({icon:'🔄',label:'リバース召喚',fn:`doFlipSummon(${p},${idx})`});
       if(fc.faceUp&&isMain&&!fc.justSummoned)items.push({icon:'🔁',label:'表示形式変更',fn:`doChangePos(${p},${idx})`});
       if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length&&isMain)
@@ -3040,12 +3446,24 @@ function showZoneActions(p,zone,idx,fc,x,y){
         items.push({icon:'⚔️',label:'攻撃宣言！',fn:`startAttack(${p},${idx})`});
     }
   } else if(zone==='spells'){
-    if(isMyZone){
-      if(!fc.faceUp&&!fc.justSet)items.push({icon:'✨',label:'発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
-      if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length&&isMain)
+    if(isMyCard){
+      // Face-down cards that haven't been set this turn
+      if(!fc.faceUp&&!fc.justSet){
+        const sub=fc.card.subtype;
+        const isQuickOrTrap=(sub==='quick'||fc.card.type==='trap'||sub==='counter');
+        // Can activate: own turn any phase, or opponent turn if freechain/quick/trap/chain window
+        const canActivate=isMyTurn?true:isQuickOrTrap||(isChain&&isQuickOrTrap);
+        if(canActivate)items.push({icon:'✨',label:'発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
+      }
+      // Face-up continuous — can use effect on own main phase
+      if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length&&isMain&&isMyTurn)
         items.push({icon:'💥',label:'効果を使う',fn:`doActivateFromField(${p},'${zone}',${idx})`});
-    } else if(!fc.faceUp&&!fc.justSet&&isBattle){
-      items.push({icon:'🕸️',label:'罠カード発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
+      // Freechain face-up
+      if(fc.faceUp&&!fc.effUsed&&fc.card.effects&&fc.card.effects.length){
+        const hasFreechain=fc.card.effects.some(e=>e.timing==='freechain'||e.timing==='opponent_activate');
+        if(hasFreechain&&!isMyTurn)
+          items.push({icon:'⛓',label:'フリーチェーン発動',fn:`doActivateFromField(${p},'${zone}',${idx})`});
+      }
     }
   }
   items.push({icon:'👁️',label:'カードを見る',fn:`viewCardDetail('${fc.card.id||''}',\`${esc(fc.card.name)}\`)`});
@@ -3098,20 +3516,50 @@ function activateOneEff(eff,srcP,dstP,srcCard,srcRef){
       );break;
     }
     case 'atk_up':{
-      const a=parseInt(p.amt)||500;const dur=p.dur||'turn';const tgt2=p.tgt||'self';
-      if(tgt2==='self'&&srcRef&&srcRef.zone==='monsters'){DS.buffs.push({targetP:srcP,targetIdx:srcRef.idx,stat:'atk',amount:a,until:dur});addLog(`「${srcCard.name}」ATK+${a}`,'lgs');}
-      else if(tgt2==='all'){for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push({targetP:srcP,targetIdx:i,stat:'atk',amount:a,until:dur});}addLog(`自軍全モンスターATK+${a}`,'lgs');}
-      else{doTarget((pp,z,i)=>pp===srcP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{DS.buffs.push({targetP:pp,targetIdx:i,stat:'atk',amount:a,until:dur});addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK+${a}`,'lgs');renderDuel();},'強化するモンスターを選択');}
+      const a=parseInt(p.amt)||500;
+      const dur=p.dur==='perm'?'field':p.dur==='turn'?'turn':'turn';
+      const tgt2=p.tgt||'self';
+      if(tgt2==='self'&&srcRef&&srcRef.zone==='monsters'){
+        DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,srcRef.idx,'atk',a,dur));
+        addLog(`「${srcCard.name}」ATK+${a}（${dur==='field'?'永続':'このターン'}）`,'lgs');
+      } else if(tgt2==='all'){
+        for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,i,'atk',a,dur));}
+        addLog(`自軍全モンスターATK+${a}`,'lgs');
+      } else {
+        doTarget((pp,z,i)=>pp===srcP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{
+          DS.buffs.push(makeBuff(srcP,srcCard,srcRef,pp,i,'atk',a,dur));
+          addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK+${a}`,'lgs');renderDuel();
+        },'強化するモンスターを選択');
+      }
       break;
     }
     case 'atk_down':{
-      const a=parseInt(p.amt)||500;const dur=p.dur||'turn';const tgt2=p.tgt||'one';
-      if(tgt2==='all'){for(let i=0;i<3;i++){if(dst.field.monsters[i])DS.buffs.push({targetP:dstP,targetIdx:i,stat:'atk',amount:-a,until:dur});}addLog(`相手全モンスターATK-${a}`,'lgd');}
-      else{doTarget((pp,z,i)=>pp===dstP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{DS.buffs.push({targetP:pp,targetIdx:i,stat:'atk',amount:-a,until:dur});addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK-${a}`,'lgd');renderDuel();},'弱体化するモンスターを選択');}
+      const a=parseInt(p.amt)||500;
+      const dur=p.dur==='perm'?'field':'turn';
+      const tgt2=p.tgt||'one';
+      if(tgt2==='all'){
+        for(let i=0;i<3;i++){if(dst.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,dstP,i,'atk',-a,dur));}
+        addLog(`相手全モンスターATK-${a}`,'lgd');
+      } else {
+        doTarget((pp,z,i)=>pp===dstP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{
+          DS.buffs.push(makeBuff(srcP,srcCard,srcRef,pp,i,'atk',-a,dur));
+          addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK-${a}`,'lgd');renderDuel();
+        },'弱体化するモンスターを選択');
+      }
       break;
     }
-    case 'def_up':{const a=parseInt(p.amt)||500;if(srcRef&&srcRef.zone==='monsters')DS.buffs.push({targetP:srcP,targetIdx:srcRef.idx,stat:'def',amount:a,until:'turn'});addLog(`「${srcCard.name}」DEF+${a}`,'lgs');break;}
-    case 'buff_all':{const a=parseInt(p.amt)||300;const dur=p.dur||'turn';for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push({targetP:srcP,targetIdx:i,stat:'atk',amount:a,until:dur});}addLog(`自軍全モンスターATK+${a}`,'lgs');break;}
+    case 'def_up':{
+      const a=parseInt(p.amt)||500;
+      const dur=p.dur==='perm'?'field':'turn';
+      if(srcRef&&srcRef.zone==='monsters')DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,srcRef.idx,'def',a,dur));
+      addLog(`「${srcCard.name}」DEF+${a}`,'lgs');break;
+    }
+    case 'buff_all':{
+      const a=parseInt(p.amt)||300;
+      const dur=p.dur==='perm'?'field':'turn';
+      for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,i,'atk',a,dur));}
+      addLog(`自軍全モンスターATK+${a}`,'lgs');break;
+    }
     case 'negate_attack':{DS.state='idle';DS.attackSrc=null;addLog(`「${srcCard.name}」の効果で攻撃を無効！`,'lgi');updateStatusBanner();break;}
     case 'negate_effect':{doTarget((pp,z,i)=>DS.players[pp].field[z][i]!=null,(pp,z,i)=>{const fc=DS.players[pp].field[z][i];fc.effUsed=true;addLog(`「${fc.card.name}」の効果を無効にして破壊！`,'lgd');toGrave(pp,z,i);renderDuel();},'無効にするカードを選択');break;}
     case 'search':{
@@ -3185,20 +3633,155 @@ function doTarget(filter,cb,label){
 }
 function cancelTarget(){DS.state='idle';DS.target={filter:null,cb:null,label:''};updateStatusBanner();renderDuel();}
 
-/* ---- BUFFS ---- */
-function getEffAtk(p,idx){const fc=DS.players[p].field.monsters[idx];if(!fc)return 0;const base=fc.card.atk||0;const bon=DS.buffs.filter(b=>b.targetP===p&&b.targetIdx===idx&&b.stat==='atk').reduce((s,b)=>s+b.amount,0);return Math.max(0,base+bon);}
-function getEffDef(p,idx){const fc=DS.players[p].field.monsters[idx];if(!fc)return 0;const base=fc.card.def||0;const bon=DS.buffs.filter(b=>b.targetP===p&&b.targetIdx===idx&&b.stat==='def').reduce((s,b)=>s+b.amount,0);return Math.max(0,base+bon);}
-function clearTurnBuffs(){DS.buffs=DS.buffs.filter(b=>b.until==='perm');}
+/* ---- BUFFS (source-based, not index-based) ---- */
+// buff = {
+//   id: unique id,
+//   srcCardId: card that applied the buff (for removing when it leaves),
+//   srcZone: 'monsters'|'spells'|null,
+//   srcIdx: field index of source card,
+//   targetP: player index (or 'all' for field-wide),
+//   targetIdx: monster slot index (or -1 for all monsters of targetP),
+//   stat: 'atk'|'def',
+//   amount: number (negative = debuff),
+//   until: 'turn'|'perm'|'field', // 'field' = lasts while source card is on field
+// }
+
+function getEffAtk(p,idx){
+  const fc=DS.players[p].field.monsters[idx];
+  if(!fc)return 0;
+  const base=fc.card.atk||0;
+  const bon=calcBuff(p,idx,'atk');
+  return Math.max(0,base+bon);
+}
+function getEffDef(p,idx){
+  const fc=DS.players[p].field.monsters[idx];
+  if(!fc)return 0;
+  const base=fc.card.def||0;
+  const bon=calcBuff(p,idx,'def');
+  return Math.max(0,base+bon);
+}
+
+function calcBuff(p,idx,stat){
+  let total=0;
+  for(const b of DS.buffs){
+    // Skip if wrong stat
+    if(b.stat!==stat)continue;
+    // Check target matches
+    const targetsThis=(b.targetP===p&&(b.targetIdx===idx||b.targetIdx===-1));
+    if(!targetsThis)continue;
+    // Check source still on field for 'field'-duration buffs
+    if(b.until==='field'){
+      if(b.srcZone&&b.srcIdx!=null){
+        const srcFc=DS.players[b.srcP]?.field[b.srcZone]?.[b.srcIdx];
+        if(!srcFc||srcFc.card.id!==b.srcCardId)continue; // source gone
+      }
+    }
+    total+=b.amount;
+  }
+  return total;
+}
+
+function clearTurnBuffs(){
+  DS.buffs=DS.buffs.filter(b=>b.until!=='turn');
+}
+
+// Remove all buffs whose source card has left the field
+function cleanStaleBuffs(){
+  DS.buffs=DS.buffs.filter(b=>{
+    if(b.until!=='field')return true;
+    if(!b.srcZone||b.srcIdx==null)return true;
+    const srcFc=DS.players[b.srcP]?.field[b.srcZone]?.[b.srcIdx];
+    return srcFc&&srcFc.card.id===b.srcCardId;
+  });
+}
+
+let _buffIdCounter=0;
+function makeBuff(srcP,srcCard,srcRef,targetP,targetIdx,stat,amount,until){
+  return{
+    id:++_buffIdCounter,
+    srcP, srcCardId:srcCard.id,
+    srcZone:srcRef?.zone||null, srcIdx:srcRef?.idx??null,
+    targetP, targetIdx, stat, amount, until
+  };
+}
+
+// Apply buffs for all continuous/always cards currently on field (called on each render)
+function applyFieldEffects(){
+  // Remove stale 'field' buffs first
+  cleanStaleBuffs();
+  // Build set of already-applied field buff source IDs to avoid doubling
+  const appliedSrcIds=new Set(DS.buffs.filter(b=>b.until==='field').map(b=>b.srcCardId+'_'+b.srcP+'_'+b.srcIdx+'_'+b.stat+'_'+b.targetIdx));
+  [0,1].forEach(p=>{
+    DS.players[p].field.spells.forEach((fc,si)=>{
+      if(!fc||!fc.faceUp)return;
+      const card=fc.card;
+      const isContOrAlways=card.subtype==='continuous';
+      if(!isContOrAlways)return;
+      (card.effects||[]).forEach(eff=>{
+        // Only auto-apply stat-modifying effects for continuous cards
+        if(eff.timing!=='always'&&eff.timing!=='main'&&eff.timing!=='standby')return;
+        const ep=eff.params||{};
+        if(eff.type==='atk_up'){
+          const a=parseInt(ep.amt)||0;
+          const tgt=ep.tgt||'all';
+          if(tgt==='all'||tgt==='one'){
+            DS.players[p].field.monsters.forEach((mfc,mi)=>{
+              if(!mfc)return;
+              const key=card.id+'_'+p+'_'+si+'_atk_'+mi;
+              if(appliedSrcIds.has(key))return;
+              DS.buffs.push(makeBuff(p,card,{zone:'spells',idx:si},p,mi,'atk',a,'field'));
+              appliedSrcIds.add(key);
+            });
+          }
+        } else if(eff.type==='atk_down'){
+          const a=parseInt(ep.amt)||0;
+          const tgt=ep.tgt||'all';
+          const dstP=opp(p);
+          if(tgt==='all'){
+            DS.players[dstP].field.monsters.forEach((mfc,mi)=>{
+              if(!mfc)return;
+              const key=card.id+'_'+p+'_'+si+'_atk_d'+mi;
+              if(appliedSrcIds.has(key))return;
+              DS.buffs.push(makeBuff(p,card,{zone:'spells',idx:si},dstP,mi,'atk',-a,'field'));
+              appliedSrcIds.add(key);
+            });
+          }
+        } else if(eff.type==='buff_all'){
+          const a=parseInt(ep.amt)||0;
+          DS.players[p].field.monsters.forEach((mfc,mi)=>{
+            if(!mfc)return;
+            const key=card.id+'_'+p+'_'+si+'_buff_'+mi;
+            if(appliedSrcIds.has(key))return;
+            DS.buffs.push(makeBuff(p,card,{zone:'spells',idx:si},p,mi,'atk',a,'field'));
+            appliedSrcIds.add(key);
+          });
+        }
+      });
+    });
+  });
+}
 
 /* ---- WIN ---- */
 function checkWin(){
-  for(let p=0;p<2;p++){if(DS.players[p].lp<=0){endDuel(opp(p));return;}}
+  for(let p=0;p<2;p++){
+    if(DS.players[p].lp<=0){
+      const winnerIdx=opp(p);
+      // Push win notification so the other side also triggers endDuel
+      if(!DS.applyingRemote) pushAction('endDuel',{winner:winnerIdx});
+      endDuel(winnerIdx);
+      return;
+    }
+  }
 }
+
 function endDuel(winner){
+  if(!DS.active)return; // already ended
   DS.active=false;
   const wn=DS.players[winner].name;
-  const ln=DS.players[opp(winner)].name;
-  document.getElementById('duel-end-txt').textContent=`🏆 ${wn} の勝利！`;
+  // Show WIN or LOSE message based on whose perspective
+  const isMyWin = !DS.isOnline || winner===DS.viewP;
+  const headline = isMyWin ? `🏆 ${wn} の勝利！` : `💀 ${DS.players[opp(winner)].name} の敗北...`;
+  document.getElementById('duel-end-txt').textContent = headline;
   const statsEl=document.getElementById('duel-end-stats');
   if(statsEl){
     const p0=DS.players[0],p1=DS.players[1];
@@ -3258,6 +3841,7 @@ function viewGraveModal(p,type){
 /* ---- RENDER ---- */
 function renderDuel(){
   if(!DS.players[0]||!DS.players[1])return;
+  applyFieldEffects(); // refresh permanent/field-duration buffs
   updateBars();renderPhaseSteps();renderAllZones();renderHands();renderSides();updatePhaseBtn();
   // Online: show/hide waiting overlay and disable phase button during opponent's turn
   const ow=document.getElementById('online-wait');
@@ -3379,6 +3963,12 @@ function renderAllZones(){
   });
 }
 
+function buffedStatHtml(p,idx,stat,effVal,baseVal){
+  const diff=effVal-baseVal;
+  const col=diff>0?'#4ae878':diff<0?'#e84a3a':'#fff';
+  return `<span style="color:${col}">${effVal}${diff!==0?`<sup style="font-size:5px">${diff>0?'+':''}${diff}</sup>`:''}</span>`;
+}
+
 function renderMiniCard(fc,p,zone,idx){
   const W=74,H=104;
   if(!fc.faceUp){
@@ -3399,7 +3989,7 @@ function renderMiniCard(fc,p,zone,idx){
   const triSel=DS.state==='tribute'&&DS.tribute.selected.includes(idx)&&p===DS.turn;
   const glow=triSel?'box-shadow:0 0 14px rgba(255,100,50,.95),0 2px 8px rgba(0,0,0,.5);':'box-shadow:0 2px 8px rgba(0,0,0,.5);';
   const statBar=zone==='monsters'
-    ?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.88);font-family:'Cinzel',serif;font-size:7px;color:#fff;text-align:center;padding:2px 0">${getEffAtk(p,idx)} / ${getEffDef(p,idx)}</div>`
+    ?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.88);font-family:'Cinzel',serif;font-size:7px;text-align:center;padding:2px 0">${buffedStatHtml(p,idx,'atk',getEffAtk(p,idx),fc.card.atk||0)} / ${buffedStatHtml(p,idx,'def',getEffDef(p,idx),fc.card.def||0)}</div>`
     :`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.75);font-size:6px;color:rgba(255,255,255,.65);text-align:center;padding:2px">${c.type==='magic'?'魔法':'罠'}</div>`;
   return`<div style="position:relative;width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1.5px solid ${bd};background:${bg};${glow}">${imgC}${nameLbl}${defTag}${atkTag}${newTag}${effTag}${statBar}</div>`;
 }
@@ -3467,6 +4057,8 @@ function updateStatusBanner(){
     el.className='status-banner trib-banner';
     el.innerHTML=`リリース選択: ${DS.tribute.selected.length}/${DS.tribute.needed}体 <button onclick="cancelTribute()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(255,100,50,.5);background:none;color:#e87040;cursor:pointer;font-size:10px">キャンセル</button>`;
     el.classList.remove('hidden');
+  } else if(DS.state==='chain'){
+    // handled in openChainWindow
   } else if(DS.state==='target'){
     el.className='status-banner tgt-banner';
     el.innerHTML=`${esc(DS.target.label)} <button onclick="cancelTarget()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(50,200,100,.4);background:none;color:#4ae878;cursor:pointer;font-size:10px">キャンセル</button>`;
@@ -3826,7 +4418,8 @@ function applyAction(a){
     case 'changePos':    doChangePos(p.pl,p.idx); break;
     case 'flipSummon':   doFlipSummon(p.pl,p.idx); break;
     case 'attack':       p.tgt===-1?doAttack(p.tp,-1):doAttack(p.tp,p.tgt); break;
-    case 'surrender':    addLog(`相手が降参しました`,'lgd'); endDuel(FB.myRole==='p1'?0:1); break;
+    case 'surrender':    addLog(`相手が降参しました`,'lgd'); endDuel(DS.viewP); break;
+    case 'endDuel':      endDuel(p.winner); break;
     case 'log':          addLog(p.msg,p.cls||''); break;
     case 'targetResult':
       // Opponent selected a target — apply same target choice on our side
@@ -3909,7 +4502,9 @@ function showCardSelectModal(cards, title, cb) {
       : `<div style="height:52px;display:flex;align-items:center;justify-content:center;font-size:22px">${c.defIcon||'⚔️'}</div>`;
     const stat = c.type==='monster'
       ? `<div style="font-size:8px;color:var(--text2);text-align:center;margin-top:2px">${c.atk||0}/${c.def||0}</div>` : '';
-    return `<div style="cursor:pointer;width:60px" onclick="doCardSelect(${i})" title="${esc(c.name)}">
+    return `<div style="cursor:pointer;width:60px;position:relative" onclick="doCardSelect(${i})" title="${esc(c.name)}"
+      onmouseenter="showCardSelectHover(event,${i})"
+      onmouseleave="hideHoverPopup()">
       <div style="width:60px;height:84px;background:${bg};border:1.5px solid ${bd};border-radius:4px;overflow:hidden;position:relative">
         ${img}
         <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.82);font-size:6px;color:#fff;text-align:center;padding:1px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-family:'Cinzel',serif">${esc(c.name)}</div>
@@ -3967,6 +4562,12 @@ function renderHome() {
 =========================== */
 let HoverTimer = null;
 function getPopup(){ return document.getElementById('card-hover-popup'); }
+
+function showCardSelectHover(ev, idx){
+  const cards = _pendingSelectCards;
+  if(!cards||!cards[idx])return;
+  showHoverPopupCard(ev, cards[idx]);
+}
 
 function showHoverPopup(ev, cardId) {
   const c = S.cards.find(x => x.id === cardId);
@@ -4058,7 +4659,7 @@ document.addEventListener('mousemove', function(ev) {
 =========================== */
 document.addEventListener('keydown',function(e){
   if(e.key!=='Escape')return;
-  const modals=['eff-modal','detail-modal','share-modal','import-modal','grave-viewer-modal','card-select-modal'];
+  const modals=['eff-modal','detail-modal','share-modal','import-modal','grave-viewer-modal','card-select-modal','crop-modal','eff-choice-modal'];
   for(const id of modals){
     const el=document.getElementById(id);
     if(el&&el.classList.contains('open')){el.classList.remove('open');return;}

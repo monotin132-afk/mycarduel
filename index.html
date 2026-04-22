@@ -840,11 +840,9 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
             <input type="text" id="fb-projectid" placeholder="your-app（projectIdの値）">
           </div>
           <div style="background:var(--bg3);border-radius:var(--r);padding:9px;font-size:10px;color:var(--text2);line-height:1.7">
-            <div style="color:var(--gold2);font-weight:500;margin-bottom:3px">入力例（あなたの場合）</div>
-            API Key: AIzaSyAKmYaR4OuNezDz475Je...<br>
-            Auth Domain: my-card-duel.firebaseapp.com<br>
-            Database URL: https://my-card-duel-default-rtdb.asia-southeast1.firebasedatabase.app<br>
-            Project ID: my-card-duel
+            <div style="color:var(--gold2);font-weight:500;margin-bottom:3px">💡 Firebaseコンソールでの確認方法</div>
+            Firebase Console → プロジェクト設定 → 全般タブ →「マイアプリ」→「SDKの設定と構成」→ <code style="background:var(--bg4);padding:1px 4px;border-radius:2px">firebaseConfig</code> の各値をコピー<br><br>
+            <div style="color:var(--text)">⚠️ APIキーは絶対にGitHubなどに公開しないでください</div>
           </div>
           <button class="btn btn-primary" onclick="saveFirebaseConfig()">💾 設定を保存して接続</button>
         </div>
@@ -4110,14 +4108,12 @@ function initOnlineMode(){
   }
 }
 
-/* ── あなたのFirebase設定をここに入力してください ── */
-const FB_PRESET_CONFIG = {
-  apiKey:      "AIzaSyAKmYaR4OuNezDz475JeQBXpBHqyRUNnuM",
-  authDomain:  "my-card-duel.firebaseapp.com",
-  databaseURL: "https://my-card-duel-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId:   "my-card-duel"
-};
-/* ─────────────────────────────────────────────── */
+/* ── Firebase設定 ──
+   セキュリティのためAPIキーはソースに含めていません。
+   対戦画面の「Firebase設定を入力」から入力してください。
+   入力した設定はブラウザのlocalStorageに保存されます。
+── */
+const FB_PRESET_CONFIG = null; // キーをソースに書かないこと（GitHubに公開されるため）
 
 function loadFBConfig(){
   // 1. User-entered config in localStorage takes priority (for config reset)

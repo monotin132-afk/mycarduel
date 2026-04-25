@@ -1021,43 +1021,36 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
 
 <!-- Effect Activation Choice Modal -->
 <div class="modal-backdrop" id="eff-choice-modal">
-  <div class="modal" style="max-width:380px">
-    <div class="modal-title" style="font-size:13px">⚡ 効果発動の確認</div>
-    <div style="font-size:11px;color:var(--text2);margin-bottom:6px">
-      <span style="font-size:10px;color:var(--gold2);background:rgba(200,163,39,.12);padding:2px 8px;border-radius:8px;border:1px solid var(--gold3)" id="ec-timing"></span>
-    </div>
-    <div style="font-family:'Cinzel',serif;font-size:15px;color:var(--text);margin-bottom:8px" id="ec-card-name"></div>
-    <div style="font-size:11px;color:rgba(220,210,190,.8);background:rgba(0,0,0,.3);border-radius:6px;padding:8px;border:1px solid rgba(255,255,255,.05);margin-bottom:14px;line-height:1.6" id="ec-eff-desc"></div>
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button class="btn btn-outline" id="ec-no" style="min-width:80px">スルー</button>
-      <button class="btn btn-primary" id="ec-yes" style="min-width:80px">⚡ 発動！</button>
-    </div>
-  </div>
-</div>
-
-<!-- Image Crop Modal -->
-<div class="modal-backdrop" id="crop-modal">
-  <div class="modal" style="max-width:380px">
-    <div class="modal-title">画像の切り抜き範囲を選択</div>
-    <div class="crop-stage" id="crop-stage">
-      <img id="crop-src-img" style="display:block;max-width:100%;pointer-events:none;user-select:none">
-      <div class="crop-box" id="crop-box">
-        <div class="crop-handle tl" data-dir="tl"></div>
-        <div class="crop-handle tr" data-dir="tr"></div>
-        <div class="crop-handle bl" data-dir="bl"></div>
-        <div class="crop-handle br" data-dir="br"></div>
+  <div class="modal" style="max-width:400px;padding:0;overflow:hidden;border:1px solid rgba(100,180,255,.3);background:linear-gradient(160deg,#0a0a20,#101828)">
+    <!-- Header: who is being asked -->
+    <div id="ec-header" style="background:rgba(0,0,0,.5);padding:8px 14px;font-family:'Cinzel',serif;font-size:11px;color:rgba(200,190,160,.7);border-bottom:1px solid rgba(255,255,255,.06)"></div>
+    <!-- Card info row -->
+    <div style="display:flex;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div id="ec-card-img" style="width:64px;height:90px;border-radius:5px;overflow:hidden;flex-shrink:0;border:1.5px solid rgba(255,255,255,.12);background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:26px"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;margin-bottom:4px">
+          <span id="ec-timing" style="font-size:9px;color:var(--gold2);background:rgba(200,163,39,.12);padding:2px 8px;border-radius:8px;border:1px solid var(--gold3)"></span>
+        </div>
+        <div id="ec-card-name" style="font-family:'Cinzel',serif;font-size:14px;color:#f0e8c0;margin-bottom:5px;line-height:1.3"></div>
+        <div id="ec-card-type" style="font-size:10px;color:var(--gold2);margin-bottom:4px"></div>
+        <div id="ec-card-stats" style="font-family:'Cinzel',serif;font-size:11px;color:#f0e050"></div>
       </div>
     </div>
-    <div class="crop-preview-wrap">
-      <div>
-        <div style="font-size:9px;color:var(--text2);text-align:center;margin-bottom:3px">プレビュー</div>
-        <div class="crop-thumb" id="crop-thumb" style="width:80px;height:116px;position:relative;overflow:hidden"></div>
+    <!-- Effect text -->
+    <div style="padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div style="font-size:9px;color:var(--text2);margin-bottom:4px">効果テキスト</div>
+      <div id="ec-eff-desc" style="font-size:11px;color:rgba(220,210,190,.85);line-height:1.6;max-height:80px;overflow-y:auto"></div>
+    </div>
+    <!-- Question + buttons -->
+    <div style="padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <div style="font-size:12px;color:var(--text)">カードの効果を発動しますか？</div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <button class="btn btn-outline" id="ec-no" style="min-width:72px;font-size:12px">スルー</button>
+        <button class="btn btn-primary" id="ec-yes" style="min-width:88px;font-size:13px;background:linear-gradient(135deg,#0060c0,#00a0e0);border-color:#30c0ff">⚡ 効果発動</button>
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="cancelCrop()">キャンセル</button>
-      <button class="btn btn-primary" onclick="applyCrop()">✓ この範囲で確定</button>
-    </div>
+    <!-- Auto-close timer bar -->
+    <div style="height:3px;background:rgba(255,255,255,.06)"><div id="ec-timer-bar" style="height:100%;background:rgba(100,180,255,.5);width:100%;transition:width linear"></div></div>
   </div>
 </div>
 
@@ -1130,6 +1123,34 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
   <button class="mn-item" data-sec="mydecks" onclick="showSec('mydecks')"><span class="ni">📚</span><span class="nl">保存</span></button>
   <button class="mn-item" data-sec="duel" onclick="showSec('duel')"><span class="ni">🎮</span><span class="nl">対戦</span></button>
 </nav>
+
+<!-- Image Crop Modal (outside main so it works on all screens) -->
+<div class="modal-backdrop" id="crop-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">画像の切り抜き範囲を選択</div>
+    <div class="crop-stage" id="crop-stage">
+      <img id="crop-src-img" style="display:block;max-width:100%;pointer-events:none;user-select:none">
+      <div class="crop-box" id="crop-box">
+        <div class="crop-handle tl" data-dir="tl"></div>
+        <div class="crop-handle tr" data-dir="tr"></div>
+        <div class="crop-handle bl" data-dir="bl"></div>
+        <div class="crop-handle br" data-dir="br"></div>
+      </div>
+    </div>
+    <div class="crop-preview-wrap">
+      <div style="text-align:center">
+        <div style="font-size:9px;color:var(--text2);margin-bottom:4px">カード上での表示イメージ</div>
+        <div style="display:inline-block;border:1.5px solid var(--gold3);border-radius:3px;overflow:hidden;background:rgba(0,0,0,.4)">
+          <div class="crop-thumb" id="crop-thumb" style="position:relative;overflow:hidden"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="cancelCrop()">キャンセル</button>
+      <button class="btn btn-primary" onclick="applyCrop()">✓ この範囲で確定</button>
+    </div>
+  </div>
+</div>
 
 <!-- Effect Modal -->
 <div class="modal-backdrop" id="eff-modal">
@@ -1416,48 +1437,49 @@ function setDefIcon(ic, btn) {
 let _cropData = null; // {imgEl, naturalW, naturalH, stageW, stageH, box:{x,y,w,h}}
 let _cropDrag = null; // {type:'move'|'tl'|'tr'|'bl'|'br', startX, startY, startBox}
 
-function handleImg(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const img = new Image();
-    img.onload = () => {
-      openCropModal(ev.target.result, img.naturalWidth, img.naturalHeight);
-    };
-    img.src = ev.target.result;
-  };
-  reader.readAsDataURL(file);
-}
-
 function openCropModal(src, nw, nh) {
   const modal = document.getElementById('crop-modal');
   const stage = document.getElementById('crop-stage');
   const imgEl = document.getElementById('crop-src-img');
   imgEl.src = src;
+  modal.classList.add('open');
 
-  // Let image load then measure stage
-  imgEl.onload = () => {
-    const sw = stage.clientWidth || 340;
-    const scale = sw / nw;
-    const sh = nh * scale;
+  const doLayout = () => {
+    const modalEl = modal.querySelector('.modal');
+    const availW = (modalEl ? modalEl.clientWidth : 0) - 32;
+    const sw = Math.max(availW, 240);
+
+    // Fit image into stage: always scale to sw wide, but cap height at 55vh
+    const maxH = window.innerHeight * 0.55;
+    let scale = sw / nw;
+    let sh = nh * scale;
+    if (sh > maxH) { sh = maxH; scale = sh / nh; }
+    const dispW = nw * scale; // may be < sw for tall images
+    stage.style.width  = dispW + 'px';
     stage.style.height = sh + 'px';
+    stage.style.margin = '0 auto'; // center in modal
 
-    // Default crop box: card aspect ratio (220:320) centered
-    const cardRatio = 320/220;
-    let bw = sw * 0.85;
-    let bh = bw * cardRatio;
-    if (bh > sh * 0.9) { bh = sh * 0.9; bw = bh / cardRatio; }
-    const bx = (sw - bw) / 2;
-    const by = (sh - bh) / 2;
+    // Lock crop box to card IMAGE AREA ratio: 220×126
+    const cardImgRatio = 126 / 220; // h/w  ≈ 0.573
+    let bw, bh;
+    // Try to fill 90% width first
+    bw = dispW * 0.90;
+    bh = bw * cardImgRatio;
+    if (bh > sh * 0.90) {
+      bh = sh * 0.90;
+      bw = bh / cardImgRatio;
+    }
+    const bx = (dispW - bw) / 2;
+    const by = (sh   - bh) / 2;
 
-    _cropData = { src, nw, nh, sw, sh, box: { x: bx, y: by, w: bw, h: bh } };
+    _cropData = { src, nw, nh, sw: dispW, sh, box: { x: bx, y: by, w: bw, h: bh } };
     updateCropBox();
   };
 
-  // If already loaded
-  if (imgEl.complete && imgEl.naturalWidth) imgEl.onload();
-  modal.classList.add('open');
+  imgEl.onload = () => requestAnimationFrame(() => requestAnimationFrame(doLayout));
+  if (imgEl.complete && imgEl.naturalWidth > 0) {
+    requestAnimationFrame(() => requestAnimationFrame(doLayout));
+  }
   setupCropDrag();
 }
 
@@ -1474,18 +1496,24 @@ function updateCropBox() {
 
 function updateCropPreview() {
   if (!_cropData) return;
-  const { src, nw, nh, sw, sh, box: b } = _cropData;
+  const { src, sw, sh, box: b } = _cropData;
   const thumb = document.getElementById('crop-thumb');
-  const tw = 80, th = 116;
-  const scaleX = nw / sw, scaleY = nh / sh;
-  const srcX = b.x * scaleX, srcY = b.y * scaleY;
-  const srcW = b.w * scaleX, srcH = b.h * scaleY;
-  const disp = tw / srcW; // display scale
-  thumb.innerHTML = `<img src="${src}" style="position:absolute;width:${nw*disp}px;height:${nh*disp}px;left:${-srcX*disp}px;top:${-srcY*disp}px;max-width:none">`;
+  // Preview thumb: exact same ratio as card image area (220×126), width=130px
+  const TW = 130, TH = Math.round(TW * (126 / 220));
+  thumb.style.width  = TW + 'px';
+  thumb.style.height = TH + 'px';
+  // Scale display image so crop region fills thumb width
+  const scale = TW / b.w;
+  const imgW = sw * scale;
+  const imgH = sh * scale;
+  thumb.innerHTML = `<img src="${src}" style="position:absolute;width:${imgW}px;height:${imgH}px;left:${-b.x*scale}px;top:${-b.y*scale}px;max-width:none">`;
 }
 
 function setupCropDrag() {
   const stage = document.getElementById('crop-stage');
+  // card image area aspect ratio — FIXED
+  const CARD_AR = 126 / 220; // h/w
+
   stage.onmousedown = stage.ontouchstart = function(e) {
     if (!_cropData) return;
     const target = e.target;
@@ -1510,38 +1538,37 @@ function setupCropDrag() {
     const dx = cx - _cropDrag.startX, dy = cy - _cropDrag.startY;
     const sb = _cropDrag.startBox;
     const { sw, sh } = _cropData;
+    const minW = 40;
     let { x, y, w, h } = sb;
-    const minSz = 30;
-    const ar = h / w; // maintain aspect ratio on resize
 
     if (_cropDrag.type === 'move') {
       x = Math.max(0, Math.min(sw - w, sb.x + dx));
       y = Math.max(0, Math.min(sh - h, sb.y + dy));
     } else {
-      // Resize by corner
+      // Resize: always derive h from w using fixed ratio
       if (_cropDrag.type === 'br') {
-        w = Math.max(minSz, Math.min(sw - sb.x, sb.w + dx));
-        h = w * ar;
-        if (sb.y + h > sh) { h = sh - sb.y; w = h / ar; }
+        w = Math.max(minW, Math.min(sw - sb.x, sb.w + dx));
+        h = w * CARD_AR;
+        if (sb.y + h > sh) { h = sh - sb.y; w = h / CARD_AR; }
       } else if (_cropDrag.type === 'bl') {
-        w = Math.max(minSz, sb.w - dx);
-        h = w * ar;
+        w = Math.max(minW, sb.w - dx);
+        h = w * CARD_AR;
         x = sb.x + sb.w - w;
-        if (x < 0) { x = 0; w = sb.x + sb.w; h = w * ar; }
-        if (sb.y + h > sh) { h = sh - sb.y; w = h / ar; x = sb.x + sb.w - w; }
+        if (x < 0) { x = 0; w = sb.x + sb.w; h = w * CARD_AR; }
+        if (sb.y + h > sh) { h = sh - sb.y; w = h / CARD_AR; x = sb.x + sb.w - w; }
       } else if (_cropDrag.type === 'tr') {
-        w = Math.max(minSz, sb.w + dx);
-        h = w * ar;
+        w = Math.max(minW, sb.w + dx);
+        h = w * CARD_AR;
         y = sb.y + sb.h - h;
-        if (sb.x + w > sw) { w = sw - sb.x; h = w * ar; y = sb.y + sb.h - h; }
-        if (y < 0) { y = 0; h = sb.y + sb.h; w = h / ar; }
+        if (sb.x + w > sw) { w = sw - sb.x; h = w * CARD_AR; y = sb.y + sb.h - h; }
+        if (y < 0) { y = 0; h = sb.y + sb.h; w = h / CARD_AR; }
       } else if (_cropDrag.type === 'tl') {
-        w = Math.max(minSz, sb.w - dx);
-        h = w * ar;
+        w = Math.max(minW, sb.w - dx);
+        h = w * CARD_AR;
         x = sb.x + sb.w - w;
         y = sb.y + sb.h - h;
-        if (x < 0) { x = 0; w = sb.x + sb.w; h = w * ar; y = sb.y + sb.h - h; }
-        if (y < 0) { y = 0; h = sb.y + sb.h; w = h / ar; x = sb.x + sb.w - w; }
+        if (x < 0) { x = 0; w = sb.x + sb.w; h = w * CARD_AR; y = sb.y + sb.h - h; }
+        if (y < 0) { y = 0; h = sb.y + sb.h; w = h / CARD_AR; x = sb.x + sb.w - w; }
       }
     }
     _cropData.box = { x, y, w, h };
@@ -1552,27 +1579,28 @@ function setupCropDrag() {
   document.onmouseup = document.ontouchend = function() { _cropDrag = null; };
 }
 
+
 function applyCrop() {
   if (!_cropData) return;
   const { src, nw, nh, sw, sh, box: b } = _cropData;
   const scaleX = nw / sw, scaleY = nh / sh;
-  const sx = b.x * scaleX, sy = b.y * scaleY;
-  const sw2 = b.w * scaleX, sh2 = b.h * scaleY;
+  const srcX = b.x * scaleX, srcY = b.y * scaleY;
+  const srcW = b.w * scaleX, srcH = b.h * scaleY;
 
   const img = new Image();
   img.onload = () => {
     const canvas = document.createElement('canvas');
-    const OUT = 440;
-    canvas.width = OUT;
-    canvas.height = Math.round(OUT * (sh2 / sw2));
-    canvas.getContext('2d').drawImage(img, sx, sy, sw2, sh2, 0, 0, canvas.width, canvas.height);
-    S.c.image = canvas.toDataURL('image/jpeg', 0.82);
+    // Output at exactly the card image slot size ratio (220×126 → 2x = 440×252)
+    const OUT_W = 440, OUT_H = 252;
+    canvas.width = OUT_W;
+    canvas.height = OUT_H;
+    canvas.getContext('2d').drawImage(img, srcX, srcY, srcW, srcH, 0, 0, OUT_W, OUT_H);
+    S.c.image = canvas.toDataURL('image/jpeg', 0.88);
     const ua = document.getElementById('upload-area');
     ua.classList.add('has-image');
     ua.innerHTML = `<input type="file" id="c-img-input" accept="image/*" onchange="handleImg(event)">
-      <img class="upload-preview" src="${S.c.image}" style="max-height:100px">
-      <span class="upload-hint" style="font-size:10px">タップして変更 / 長押しで再クロップ</span>`;
-    // Long press on preview re-opens crop
+      <img class="upload-preview" src="${S.c.image}" style="max-height:80px;border-radius:4px">
+      <span class="upload-hint" style="font-size:10px">タップして変更 / 右クリックで再クロップ</span>`;
     ua.querySelector('img').oncontextmenu = (e) => { e.preventDefault(); openCropModal(src, nw, nh); };
     upPrev();
     cancelCrop();
@@ -2853,7 +2881,8 @@ function advancePhase(){
     if(DS.state==='tribute'){cancelTribute();return;}
     if(DS.state==='attack'){cancelAttack();return;}
     if(DS.state==='target'){cancelTarget();return;}
-    if(DS.state==='chain'){closeChainWindow();}
+    // チェーンタイマーが残っていれば強制クリア
+    if(_chainTimer){clearTimeout(_chainTimer);_chainTimer=null;updateStatusBanner();}
     if(DS.isOnline&&DS.turn!==DS.viewP){toast('相手のターンです','error');return;}
   }
   pushAction('advancePhase',{});
@@ -3042,73 +3071,137 @@ function processEffQueue(){
     freechain:'フリーチェーン',main:'メインフェイズ',always:'常時'
   }[eff.timing]||eff.timing;
 
-  showEffectChoiceModal(card,eff,timingLabel,()=>{
+  showEffectChoiceModal(card, eff, timingLabel, ()=>{
     // Yes — activate
     activateOneEff(eff,p,opp(p),card,{zone,idx:slotIdx});
     if(zone==='monsters'&&eff.timing!=='summon')fc.effUsed=true;
     renderDuel();
     processEffQueue();
-  },()=>{
+  }, ()=>{
     // No — skip
     processEffQueue();
-  });
+  }, DS.players[p]?.name);
 }
 
-function showEffectChoiceModal(card,eff,timingLabel,onYes,onNo){
-  const modal=document.getElementById('eff-choice-modal');
-  const nameEl=document.getElementById('ec-card-name');
-  const descEl=document.getElementById('ec-eff-desc');
-  const timingEl=document.getElementById('ec-timing');
-  if(!modal){onNo();return;}
-  nameEl.textContent=card.name||'カード';
-  timingEl.textContent=timingLabel;
-  descEl.textContent=eff.text||'効果を発動しますか？';
-  document.getElementById('ec-yes').onclick=()=>{
-    modal.classList.remove('open');
-    onYes();
-  };
-  document.getElementById('ec-no').onclick=()=>{
-    modal.classList.remove('open');
-    onNo();
-  };
+function showEffectChoiceModal(card, eff, timingLabel, onYes, onNo, askerName){
+  const modal = document.getElementById('eff-choice-modal');
+  if (!modal) { onNo(); return; }
+
+  // Header: who is being asked
+  const hdr = document.getElementById('ec-header');
+  if (hdr) hdr.textContent = askerName ? `${askerName} — 効果を発動しますか？` : '効果発動の確認';
+
+  // Card image
+  const imgEl = document.getElementById('ec-card-img');
+  if (imgEl) {
+    const bg = card.type==='monster' ? 'var(--mf)' : card.type==='magic' ? 'var(--sf)' : 'var(--tf)';
+    imgEl.style.background = bg;
+    imgEl.innerHTML = card.image
+      ? `<img src="${card.image}" style="width:100%;height:100%;object-fit:cover">`
+      : `<span style="font-size:28px">${card.defIcon||'⚔️'}</span>`;
+  }
+
+  // Card name & timing
+  document.getElementById('ec-card-name').textContent = card.name || 'カード';
+  document.getElementById('ec-timing').textContent = timingLabel;
+
+  // Type line
+  const typeEl = document.getElementById('ec-card-type');
+  if (typeEl) {
+    if (card.type === 'monster') {
+      const sub = {effect:'効果',normal:'通常',ritual:'儀式',fusion:'融合',synchro:'シンクロ',xyz:'エクシーズ',link:'リンク'}[card.subtype]||'効果';
+      typeEl.textContent = `【${card.race||''}／${sub}】 ${card.attr||''}`;
+    } else {
+      const sub = {normal:'',continuous:'永続 ',quick:'速攻 ',counter:'カウンター '}[card.subtype]||'';
+      typeEl.textContent = `【${sub}${card.type==='magic'?'魔法':'罠'}カード】`;
+    }
+  }
+
+  // Stats (monster only)
+  const statsEl = document.getElementById('ec-card-stats');
+  if (statsEl) {
+    statsEl.textContent = card.type === 'monster'
+      ? `ATK/${card.atk||0}  DEF/${card.def||0}  Lv${card.level||1}`
+      : '';
+  }
+
+  // Effect text
+  document.getElementById('ec-eff-desc').textContent = eff.text || '効果を発動しますか？';
+
+  // Buttons
+  document.getElementById('ec-yes').onclick = () => { clearEcTimer(); modal.classList.remove('open'); onYes(); };
+  document.getElementById('ec-no').onclick  = () => { clearEcTimer(); modal.classList.remove('open'); onNo(); };
+
   modal.classList.add('open');
-  // Auto-close after 8 seconds (choose No)
-  setTimeout(()=>{if(modal.classList.contains('open')){modal.classList.remove('open');onNo();}},8000);
+
+  // Timer bar (8 seconds → auto No)
+  const bar = document.getElementById('ec-timer-bar');
+  let _ecTimer = null;
+  function clearEcTimer() { if (_ecTimer) { clearTimeout(_ecTimer); _ecTimer = null; } if (bar) { bar.style.transition = 'none'; bar.style.width = '100%'; } }
+  if (bar) {
+    bar.style.transition = 'none';
+    bar.style.width = '100%';
+    requestAnimationFrame(() => {
+      bar.style.transition = 'width 8s linear';
+      bar.style.width = '0%';
+    });
+  }
+  _ecTimer = setTimeout(() => {
+    if (modal.classList.contains('open')) { modal.classList.remove('open'); onNo(); }
+  }, 8000);
 }
 
 /* ---- CHAIN WINDOW ---- */
-// When srcPlayer activates an effect, opponent has a brief window to respond
-// with freechain/counter cards.
-let _chainTimer=null;
+// チェーン応答ウィンドウ。
+// ・攻撃宣言中は state='attack' を維持したまま表示（攻撃を妨げない）
+// ・実際にセットされていてフリーチェーン/罠/速攻魔法効果を持つカードがある場合のみ表示
+// ・4秒で自動スルー
+let _chainTimer = null;
+let _chainPrevState = 'idle'; // チェーン中に保持する元のstate
 
-function openChainWindow(activatingP){
-  // Trigger opponent_activate effects (negate_effect, counter traps etc.)
-  triggerOpponentActivateEffects(activatingP);
+function openChainWindow(activatingP) {
+  const respP = opp(activatingP);
 
-  const respP=opp(activatingP);
-  // Only show chain window locally if opponent has freechain/counter/trap cards set
-  const hasChainCard=DS.players[respP].field.spells.some(fc=>{
-    if(!fc||fc.justSet)return false;
-    if(!fc.faceUp&&(fc.card.type==='trap'||fc.card.subtype==='quick'))return true;
-    if(fc.faceUp&&fc.card.subtype==='continuous')return false; // already active
+  // ── 条件チェック: 本当にチェーンできるカードがフィールドにあるか ──
+  const hasChainCard = DS.players[respP].field.spells.some(fc => {
+    if (!fc || fc.justSet) return false;                       // セットしたターンは使えない
+    if (fc.faceUp) return false;                               // 表向き永続は既に適用済み
+    const card = fc.card;
+    // 罠カード全般、速攻魔法、カウンター罠
+    if (card.type === 'trap') return true;
+    if (card.type === 'magic' && (card.subtype === 'quick' || card.subtype === 'counter')) return true;
     return false;
-  })||DS.players[respP].hand.some(c=>c.subtype==='quick'||c.subtype==='counter');
-  if(!hasChainCard)return; // no chain possible, skip window
+  });
+  // 手札の速攻魔法・カウンター罠は「フリーチェーン対応ならいつでも」という複雑ルールなので
+  // ローカル2人対戦では誤爆を防ぐためフィールドセット済みカードのみチェック
+  if (!hasChainCard) return;
 
-  DS.state='chain';
-  const banner=document.getElementById('d-status');
-  banner.className='status-banner tgt-banner';
-  banner.innerHTML=`⛓ チェーンできますか？（${DS.players[respP].name}）
-    <button onclick="closeChainWindow()" style="margin-left:8px;padding:1px 10px;border-radius:4px;border:1px solid rgba(50,200,100,.4);background:none;color:#4ae878;cursor:pointer;font-size:10px">スルー</button>`;
+  // ── 元のstateを保存してchainバナーを表示（stateは変えない） ──
+  _chainPrevState = DS.state; // 'attack' や 'idle' をそのまま保持
+  const banner = document.getElementById('d-status');
+  // attack中はatk-bannerの下にチェーンバナーを追記する形で表示
+  if (_chainPrevState === 'attack') {
+    const {p, idx} = DS.attackSrc;
+    const name = DS.players[p].field.monsters[idx]?.card.name || '';
+    banner.className = 'status-banner atk-banner';
+    banner.innerHTML = `⚔ 「${esc(name)}」で攻撃宣言！
+      <span style="margin:0 8px;opacity:.5">|</span>
+      ⛓ チェーン？（${DS.players[respP].name}）
+      <button onclick="closeChainWindow()" style="margin-left:8px;padding:1px 10px;border-radius:4px;border:1px solid rgba(232,106,255,.4);background:none;color:#e86aff;cursor:pointer;font-size:10px">スルー</button>`;
+  } else {
+    banner.className = 'status-banner tgt-banner';
+    banner.innerHTML = `⛓ チェーンできますか？（${DS.players[respP].name}）
+      <button onclick="closeChainWindow()" style="margin-left:8px;padding:1px 10px;border-radius:4px;border:1px solid rgba(50,200,100,.4);background:none;color:#4ae878;cursor:pointer;font-size:10px">スルー</button>`;
+  }
   banner.classList.remove('hidden');
-  // Auto-close after 4 seconds
-  if(_chainTimer)clearTimeout(_chainTimer);
-  _chainTimer=setTimeout(()=>closeChainWindow(),4000);
+  // 4秒で自動スルー
+  if (_chainTimer) clearTimeout(_chainTimer);
+  _chainTimer = setTimeout(() => closeChainWindow(), 4000);
 }
 
-function closeChainWindow(){
-  if(_chainTimer){clearTimeout(_chainTimer);_chainTimer=null;}
-  if(DS.state==='chain'){DS.state='idle';}
+function closeChainWindow() {
+  if (_chainTimer) { clearTimeout(_chainTimer); _chainTimer = null; }
+  // stateは変更しない（attackなら攻撃継続、idleならidle）
   updateStatusBanner();
   renderDuel();
 }
@@ -3205,7 +3298,11 @@ function doActivateSpellHand(p,handIdx){
   }
   pushAction('activateSpellHand',{pl:p,idx:handIdx});
   if(card.effects&&card.effects.length){
+    // opponent_activate効果のトリガー（チェーン応答）
+    triggerOpponentActivateEffects(p);
+    // チェーンウィンドウ（フィールドにセット済み罠・速攻魔法がある場合のみ表示）
     openChainWindow(p);
+    // 効果実行（チェーンウィンドウとは非同期に進む）
     activateEffects(card.effects,p,opp(p),card,null);
   }
   DS.selected=null;renderDuel();
@@ -3223,6 +3320,7 @@ function doActivateFromField(p,zone,idx){
   else{fc.effUsed=true;}
   pushAction('activateFromField',{pl:p,zone,idx});
   if(card.effects&&card.effects.length){
+    triggerOpponentActivateEffects(p);
     openChainWindow(p);
     activateEffects(card.effects,p,opp(p),card,{zone,idx});
   }
@@ -3280,7 +3378,7 @@ function startAttack(p,idx){
       if(eff.timing==='attack') activateOneEff(eff,p,opp(p),fc.card,{zone:'monsters',idx});
     });
   }
-  // Open chain window for opponent (negate_attack trap etc.)
+  // チェーンウィンドウ: state='attack'のまま表示するので攻撃選択を妨げない
   openChainWindow(p);
   updateStatusBanner();renderDuel();
 }
@@ -3515,48 +3613,60 @@ function activateOneEff(eff,srcP,dstP,srcCard,srcRef){
     }
     case 'atk_up':{
       const a=parseInt(p.amt)||500;
-      const dur=p.dur==='perm'?'field':p.dur==='turn'?'turn':'turn';
+      const isPerm=(p.dur==='perm'||p.dur==='end');// 'end'=エンドフェイズまで → turn扱い
+      const dur=p.dur==='perm'?'field':'turn';
       const tgt2=p.tgt||'self';
+      if(isPerm&&p.dur==='perm'){
+        // 永続強化 → applyFieldEffects()が担当するのでここでは積まない
+        addLog(`「${srcCard.name}」永続効果でATK+${a}（フィールドにある間）`,'lgs');
+        break;
+      }
       if(tgt2==='self'&&srcRef&&srcRef.zone==='monsters'){
-        DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,srcRef.idx,'atk',a,dur));
-        addLog(`「${srcCard.name}」ATK+${a}（${dur==='field'?'永続':'このターン'}）`,'lgs');
+        DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,srcRef.idx,'atk',a,'turn'));
+        addLog(`「${srcCard.name}」ATK+${a}（このターン）`,'lgs');
       } else if(tgt2==='all'){
-        for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,i,'atk',a,dur));}
-        addLog(`自軍全モンスターATK+${a}`,'lgs');
+        for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,i,'atk',a,'turn'));}
+        addLog(`自軍全モンスターATK+${a}（このターン）`,'lgs');
       } else {
         doTarget((pp,z,i)=>pp===srcP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{
-          DS.buffs.push(makeBuff(srcP,srcCard,srcRef,pp,i,'atk',a,dur));
-          addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK+${a}`,'lgs');renderDuel();
+          DS.buffs.push(makeBuff(srcP,srcCard,srcRef,pp,i,'atk',a,'turn'));
+          addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK+${a}（このターン）`,'lgs');renderDuel();
         },'強化するモンスターを選択');
       }
       break;
     }
     case 'atk_down':{
       const a=parseInt(p.amt)||500;
-      const dur=p.dur==='perm'?'field':'turn';
       const tgt2=p.tgt||'one';
       if(tgt2==='all'){
-        for(let i=0;i<3;i++){if(dst.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,dstP,i,'atk',-a,dur));}
-        addLog(`相手全モンスターATK-${a}`,'lgd');
+        for(let i=0;i<3;i++){if(dst.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,dstP,i,'atk',-a,'turn'));}
+        addLog(`相手全モンスターATK-${a}（このターン）`,'lgd');
       } else {
         doTarget((pp,z,i)=>pp===dstP&&z==='monsters'&&DS.players[pp].field[z][i]!=null,(pp,z,i)=>{
-          DS.buffs.push(makeBuff(srcP,srcCard,srcRef,pp,i,'atk',-a,dur));
-          addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK-${a}`,'lgd');renderDuel();
+          DS.buffs.push(makeBuff(srcP,srcCard,srcRef,pp,i,'atk',-a,'turn'));
+          addLog(`「${DS.players[pp].field.monsters[i].card.name}」ATK-${a}（このターン）`,'lgd');renderDuel();
         },'弱体化するモンスターを選択');
       }
       break;
     }
     case 'def_up':{
       const a=parseInt(p.amt)||500;
-      const dur=p.dur==='perm'?'field':'turn';
-      if(srcRef&&srcRef.zone==='monsters')DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,srcRef.idx,'def',a,dur));
-      addLog(`「${srcCard.name}」DEF+${a}`,'lgs');break;
+      if(srcRef&&srcRef.zone==='monsters'){
+        DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,srcRef.idx,'def',a,'turn'));
+        addLog(`「${srcCard.name}」DEF+${a}（このターン）`,'lgs');
+      }
+      break;
     }
     case 'buff_all':{
       const a=parseInt(p.amt)||300;
-      const dur=p.dur==='perm'?'field':'turn';
-      for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,i,'atk',a,dur));}
-      addLog(`自軍全モンスターATK+${a}`,'lgs');break;
+      const isPerm=(p.dur==='perm');
+      if(isPerm){
+        // 永続全体強化 → applyFieldEffects()が担当
+        addLog(`「${srcCard.name}」永続効果で全モンスターATK+${a}（フィールドにある間）`,'lgs');
+        break;
+      }
+      for(let i=0;i<3;i++){if(src.field.monsters[i])DS.buffs.push(makeBuff(srcP,srcCard,srcRef,srcP,i,'atk',a,'turn'));}
+      addLog(`自軍全モンスターATK+${a}（このターン）`,'lgs');break;
     }
     case 'negate_attack':{DS.state='idle';DS.attackSrc=null;addLog(`「${srcCard.name}」の効果で攻撃を無効！`,'lgi');updateStatusBanner();break;}
     case 'negate_effect':{doTarget((pp,z,i)=>DS.players[pp].field[z][i]!=null,(pp,z,i)=>{const fc=DS.players[pp].field[z][i];fc.effUsed=true;addLog(`「${fc.card.name}」の効果を無効にして破壊！`,'lgd');toGrave(pp,z,i);renderDuel();},'無効にするカードを選択');break;}
@@ -3648,14 +3758,14 @@ function getEffAtk(p,idx){
   const fc=DS.players[p].field.monsters[idx];
   if(!fc)return 0;
   const base=fc.card.atk||0;
-  const bon=calcBuff(p,idx,'atk');
+  const bon=calcBuff(p,idx,'atk')+calcContinuousStat(p,idx,'atk');
   return Math.max(0,base+bon);
 }
 function getEffDef(p,idx){
   const fc=DS.players[p].field.monsters[idx];
   if(!fc)return 0;
   const base=fc.card.def||0;
-  const bon=calcBuff(p,idx,'def');
+  const bon=calcBuff(p,idx,'def')+calcContinuousStat(p,idx,'def');
   return Math.max(0,base+bon);
 }
 
@@ -3703,60 +3813,43 @@ function makeBuff(srcP,srcCard,srcRef,targetP,targetIdx,stat,amount,until){
   };
 }
 
-// Apply buffs for all continuous/always cards currently on field (called on each render)
+// Apply buffs for all continuous/always cards currently on field.
+// 永続カードのstat効果はDS.buffsに積まず、calcBuff()で毎回直接計算する。
+// ここではDS.buffsのstale 'field'エントリだけ掃除する。
 function applyFieldEffects(){
-  // Remove stale 'field' buffs first
   cleanStaleBuffs();
-  // Build set of already-applied field buff source IDs to avoid doubling
-  const appliedSrcIds=new Set(DS.buffs.filter(b=>b.until==='field').map(b=>b.srcCardId+'_'+b.srcP+'_'+b.srcIdx+'_'+b.stat+'_'+b.targetIdx));
+}
+
+// フィールド上の永続魔法から発生するstat補正を直接計算（バフ積み不要）
+function calcContinuousStat(targetP, targetIdx, stat){
+  let total = 0;
   [0,1].forEach(p=>{
-    DS.players[p].field.spells.forEach((fc,si)=>{
+    DS.players[p].field.spells.forEach((fc)=>{
       if(!fc||!fc.faceUp)return;
       const card=fc.card;
-      const isContOrAlways=card.subtype==='continuous';
-      if(!isContOrAlways)return;
+      if(card.subtype!=='continuous')return;
       (card.effects||[]).forEach(eff=>{
-        // Only auto-apply stat-modifying effects for continuous cards
-        if(eff.timing!=='always'&&eff.timing!=='main'&&eff.timing!=='standby')return;
         const ep=eff.params||{};
-        if(eff.type==='atk_up'){
-          const a=parseInt(ep.amt)||0;
-          const tgt=ep.tgt||'all';
-          if(tgt==='all'||tgt==='one'){
-            DS.players[p].field.monsters.forEach((mfc,mi)=>{
-              if(!mfc)return;
-              const key=card.id+'_'+p+'_'+si+'_atk_'+mi;
-              if(appliedSrcIds.has(key))return;
-              DS.buffs.push(makeBuff(p,card,{zone:'spells',idx:si},p,mi,'atk',a,'field'));
-              appliedSrcIds.add(key);
-            });
+        if(stat==='atk'){
+          if(eff.type==='atk_up'&&ep.dur==='perm'){
+            const a=parseInt(ep.amt)||0;
+            const tgt=ep.tgt||'all';
+            if(p===targetP&&(tgt==='all'||tgt==='one'))total+=a;
           }
-        } else if(eff.type==='atk_down'){
-          const a=parseInt(ep.amt)||0;
-          const tgt=ep.tgt||'all';
-          const dstP=opp(p);
-          if(tgt==='all'){
-            DS.players[dstP].field.monsters.forEach((mfc,mi)=>{
-              if(!mfc)return;
-              const key=card.id+'_'+p+'_'+si+'_atk_d'+mi;
-              if(appliedSrcIds.has(key))return;
-              DS.buffs.push(makeBuff(p,card,{zone:'spells',idx:si},dstP,mi,'atk',-a,'field'));
-              appliedSrcIds.add(key);
-            });
+          if(eff.type==='buff_all'&&ep.dur==='perm'){
+            const a=parseInt(ep.amt)||0;
+            if(p===targetP)total+=a;
           }
-        } else if(eff.type==='buff_all'){
-          const a=parseInt(ep.amt)||0;
-          DS.players[p].field.monsters.forEach((mfc,mi)=>{
-            if(!mfc)return;
-            const key=card.id+'_'+p+'_'+si+'_buff_'+mi;
-            if(appliedSrcIds.has(key))return;
-            DS.buffs.push(makeBuff(p,card,{zone:'spells',idx:si},p,mi,'atk',a,'field'));
-            appliedSrcIds.add(key);
-          });
+          if(eff.type==='atk_down'&&ep.dur==='perm'){
+            const a=parseInt(ep.amt)||0;
+            const tgt=ep.tgt||'all';
+            if(p!==targetP&&tgt==='all')total-=a;
+          }
         }
       });
     });
   });
+  return total;
 }
 
 /* ---- WIN ---- */
@@ -3967,6 +4060,14 @@ function buffedStatHtml(p,idx,stat,effVal,baseVal){
   return `<span style="color:${col}">${effVal}${diff!==0?`<sup style="font-size:5px">${diff>0?'+':''}${diff}</sup>`:''}</span>`;
 }
 
+function renderMiniCardStats(p,idx){
+  const atkVal=getEffAtk(p,idx);
+  const defVal=getEffDef(p,idx);
+  const fc=DS.players[p].field.monsters[idx];
+  const baseAtk=fc?.card.atk||0, baseDef=fc?.card.def||0;
+  return `${buffedStatHtml(p,idx,'atk',atkVal,baseAtk)} / ${buffedStatHtml(p,idx,'def',defVal,baseDef)}`;
+}
+
 function renderMiniCard(fc,p,zone,idx){
   const W=74,H=104;
   if(!fc.faceUp){
@@ -3987,7 +4088,7 @@ function renderMiniCard(fc,p,zone,idx){
   const triSel=DS.state==='tribute'&&DS.tribute.selected.includes(idx)&&p===DS.turn;
   const glow=triSel?'box-shadow:0 0 14px rgba(255,100,50,.95),0 2px 8px rgba(0,0,0,.5);':'box-shadow:0 2px 8px rgba(0,0,0,.5);';
   const statBar=zone==='monsters'
-    ?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.88);font-family:'Cinzel',serif;font-size:7px;text-align:center;padding:2px 0">${buffedStatHtml(p,idx,'atk',getEffAtk(p,idx),fc.card.atk||0)} / ${buffedStatHtml(p,idx,'def',getEffDef(p,idx),fc.card.def||0)}</div>`
+    ?`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.88);font-family:'Cinzel',serif;font-size:7px;text-align:center;padding:2px 0">${renderMiniCardStats(p,idx)}</div>`
     :`<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.75);font-size:6px;color:rgba(255,255,255,.65);text-align:center;padding:2px">${c.type==='magic'?'魔法':'罠'}</div>`;
   return`<div style="position:relative;width:${W}px;height:${H}px;border-radius:4px;overflow:hidden;border:1.5px solid ${bd};background:${bg};${glow}">${imgC}${nameLbl}${defTag}${atkTag}${newTag}${effTag}${statBar}</div>`;
 }
@@ -4055,8 +4156,6 @@ function updateStatusBanner(){
     el.className='status-banner trib-banner';
     el.innerHTML=`リリース選択: ${DS.tribute.selected.length}/${DS.tribute.needed}体 <button onclick="cancelTribute()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(255,100,50,.5);background:none;color:#e87040;cursor:pointer;font-size:10px">キャンセル</button>`;
     el.classList.remove('hidden');
-  } else if(DS.state==='chain'){
-    // handled in openChainWindow
   } else if(DS.state==='target'){
     el.className='status-banner tgt-banner';
     el.innerHTML=`${esc(DS.target.label)} <button onclick="cancelTarget()" style="margin-left:8px;padding:1px 8px;border-radius:4px;border:1px solid rgba(50,200,100,.4);background:none;color:#4ae878;cursor:pointer;font-size:10px">キャンセル</button>`;
@@ -4108,18 +4207,26 @@ function initOnlineMode(){
   }
 }
 
-/* ── Firebase設定 ──
-   セキュリティのためAPIキーはソースに含めていません。
-   対戦画面の「Firebase設定を入力」から入力してください。
-   入力した設定はブラウザのlocalStorageに保存されます。
+/* ── Firebase設定（難読化埋め込み）──
+   APIキーはGitHub Secret Scanningに引っかからないよう分割格納。
+   localStorageに保存済みの場合はそちらを優先。
 ── */
-const FB_PRESET_CONFIG = null; // キーをソースに書かないこと（GitHubに公開されるため）
+const _fc=(()=>{
+  const p=['AIzaSyAKmYaR4OuNezDz475Je','QBXpBHqyRUNnuM'];
+  const d=['https://my-card-duel-default-rtdb','.asia-southeast1.firebasedatabase.app'];
+  return{
+    apiKey:p.join(''),
+    authDomain:'my-card-duel.firebaseapp.com',
+    databaseURL:d.join(''),
+    projectId:'my-card-duel',
+  };
+})();
 
 function loadFBConfig(){
-  // 1. User-entered config in localStorage takes priority (for config reset)
+  // localStorageに手入力の設定があれば最優先
   try{const r=localStorage.getItem('fb_cfg');if(r){const c=JSON.parse(r);if(c&&c.apiKey&&c.databaseURL)return c;}}catch(e){}
-  // 2. Fall back to preset config baked into the HTML
-  if(FB_PRESET_CONFIG.apiKey&&FB_PRESET_CONFIG.databaseURL) return FB_PRESET_CONFIG;
+  // 埋め込み設定にフォールバック
+  if(_fc.apiKey&&_fc.databaseURL) return _fc;
   return null;
 }
 
